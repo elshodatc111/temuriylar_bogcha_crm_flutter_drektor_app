@@ -25,6 +25,7 @@ class _HodimPageState extends State<HodimPage> {
             indicatorWeight: 3,
             indicatorColor: Colors.white,
             labelColor: Colors.white,
+            unselectedLabelColor: Colors.white54,
             labelStyle: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),
             tabs: [
               Tab(
