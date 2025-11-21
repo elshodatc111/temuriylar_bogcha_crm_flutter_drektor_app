@@ -3,7 +3,10 @@ import 'package:get/get.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/davomad/davomad_creatre_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/davomad/kunlik_hodim_davomadi_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/hodim/hodim_page.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/lavozim/lavozim_page.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/paymarts/paymart_setting_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/room/rooms_page.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/sms/sms_setting_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/profile/profile_page.dart';
 
 class SettingPage extends StatefulWidget {
@@ -27,9 +30,9 @@ class _SettingPageState extends State<SettingPage> {
                 _itemMenu(Icons.people_alt_outlined,"Hodimlar","Hodimlar sozlamalari",(){Get.to(()=>HodimPage());}),
                 _itemMenu(Icons.emoji_people,"Davomad","Hodimlar davomadi",(){Get.to(()=>KunlikHodimDavomadiPage());}),
                 _itemMenu(Icons.room_preferences_rounded,"Xonalar","Xonalar sozlamalari",(){Get.to(()=>RoomsPage());}),
-                _itemMenu(Icons.workspace_premium,"Lavozimlar","Mavjud lavozimlar",(){print('Lavozimlar');}),
-                _itemMenu(Icons.message,"SMS","SMS sozlamalari",(){print('Hodimlar');}),
-                _itemMenu(Icons.account_balance_wallet,"To'lovlar","To'lov sozlamalari",(){print('Hodimlar');}),
+                _itemMenu(Icons.workspace_premium,"Lavozimlar","Mavjud lavozimlar",(){Get.to(()=>LavozimPage());}),
+                _itemMenu(Icons.message,"SMS, Eskiz.uz","SMS sozlamalari",(){Get.to(()=>SmsSettingPage());}),
+                _itemMenu(Icons.account_balance_wallet,"Tarbiyachiga bonus va Exson","arbiyachiga bonus va Exson sozlamalari",(){Get.to(()=>PaymartSettingPage());}),
                 _itemMenu(Icons.account_balance,"Moliya","Moliya hisoboti",(){print('Hodimlar');}),
                 _itemMenu(Icons.bar_chart,"Statistika","Statistika",(){print('Hodimlar');}),
               ]

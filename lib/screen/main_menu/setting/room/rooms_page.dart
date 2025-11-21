@@ -159,12 +159,9 @@ class _RoomsPageState extends State<RoomsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Colors.blue.shade700;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Xonalar"),
-        backgroundColor: primary,
         actions: [
           IconButton(
             onPressed: () async {
@@ -182,7 +179,7 @@ class _RoomsPageState extends State<RoomsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: primary),
+            CircularProgressIndicator(color: Colors.black),
             const SizedBox(height: 12),
             const Text("Ma'lumotlar yuklanmoqda...")
           ],
@@ -200,7 +197,7 @@ class _RoomsPageState extends State<RoomsPage> {
               icon: const Icon(Icons.refresh),
               label: const Text("Qayta urinish"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: primary,
+                backgroundColor: Colors.blue,
               ),
             )
           ],
@@ -225,7 +222,7 @@ class _RoomsPageState extends State<RoomsPage> {
                 leading: CircleAvatar(
                   radius: 24,
                   backgroundColor: Colors.blue.shade50,
-                  child: Icon(Icons.meeting_room, color: primary, size: 26),
+                  child: Icon(Icons.meeting_room, color: Colors.blue, size: 26),
                 ),
 
                 title: Row(
@@ -236,7 +233,7 @@ class _RoomsPageState extends State<RoomsPage> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: primary,
+                        color: Colors.blue,
                       ),
                     ),
                     Text(
@@ -244,7 +241,7 @@ class _RoomsPageState extends State<RoomsPage> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: primary,
+                        color: Colors.blue,
                       ),
                     )
                   ],

@@ -96,7 +96,6 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Colors.blue.shade700;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Yangi xona yaratish"),
@@ -183,7 +182,7 @@ class _CreateRoomPageState extends State<CreateRoomPage> {
                 child: ElevatedButton(
                   onPressed: _loading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primary,
+                    backgroundColor: Colors.blue,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
