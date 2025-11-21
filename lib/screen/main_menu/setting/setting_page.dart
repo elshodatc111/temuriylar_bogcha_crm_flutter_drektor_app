@@ -21,13 +21,14 @@ class _SettingPageState extends State<SettingPage> {
           child: Column(
               children: [
                 _itemMenu(Icons.person,"Profil","Profil ma'lumotlari",(){Get.to(()=>ProfilePage());}),
-                _itemMenu(Icons.add,"Hodimlar","Hodimlar sozlamalari",(){Get.to(()=>HodimPage());}),
-                _itemMenu(Icons.add,"Xonalar","Xonalar sozlamalari",(){print('Xonalar');}),
-                _itemMenu(Icons.add,"Lavozimlar","Mavjud lavozimlar",(){print('Lavozimlar');}),
-                _itemMenu(Icons.add,"SMS","SMS sozlamalari",(){print('Hodimlar');}),
-                _itemMenu(Icons.add,"To'lovlar","To'lov sozlamalari",(){print('Hodimlar');}),
-                _itemMenu(Icons.add,"Moliya","Moliya hisoboti",(){print('Hodimlar');}),
-                _itemMenu(Icons.add,"Statistika","Statistika",(){print('Hodimlar');}),
+                _itemMenu(Icons.people_alt_outlined,"Hodimlar","Hodimlar sozlamalari",(){Get.to(()=>HodimPage());}),
+                _itemMenu(Icons.emoji_people,"Davomad","Hodimlar davomadi",(){print('Xonalar');}),
+                _itemMenu(Icons.room_preferences_rounded,"Xonalar","Xonalar sozlamalari",(){print('Xonalar');}),
+                _itemMenu(Icons.workspace_premium,"Lavozimlar","Mavjud lavozimlar",(){print('Lavozimlar');}),
+                _itemMenu(Icons.message,"SMS","SMS sozlamalari",(){print('Hodimlar');}),
+                _itemMenu(Icons.account_balance_wallet,"To'lovlar","To'lov sozlamalari",(){print('Hodimlar');}),
+                _itemMenu(Icons.account_balance,"Moliya","Moliya hisoboti",(){print('Hodimlar');}),
+                _itemMenu(Icons.bar_chart,"Statistika","Statistika",(){print('Hodimlar');}),
               ]
           ),
         ),

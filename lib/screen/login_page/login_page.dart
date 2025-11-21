@@ -136,8 +136,7 @@ class _LoginPageState extends State<LoginPage>
             return;
           } else {
             setState(() => _isLoading = false);
-            final errMsg =
-                body['message'] ??
+            final errMsg = body['message'] ??
                 'Login muvaffaqiyatsiz. Maʼlumotlarni tekshiring.';
             if (!mounted) return;
             ScaffoldMessenger.of(
