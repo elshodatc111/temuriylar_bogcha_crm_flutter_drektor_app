@@ -1,6 +1,7 @@
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/setting_page.dart';
 import '../../../../../screen/main_menu/child/child_page.dart';
 import '../../../../../screen/main_menu/group/group_page.dart';
 import '../../../../../screen/main_menu/kassa/kassa_page.dart';
@@ -20,7 +21,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     ChildPage(),
     GroupPage(),
     KassaPage(),
-    ProfilePage(),
+    SettingPage(),
   ];
   @override
   void initState() {

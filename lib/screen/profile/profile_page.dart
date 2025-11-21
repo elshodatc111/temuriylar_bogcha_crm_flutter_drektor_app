@@ -67,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     final String position = user != null && user is Map ? (user['position'] ?? ' ') : ' ';
     return  Scaffold(
       appBar: AppBar(
-        title: Text("Sozlamalar"),
+        title: Text("Profil"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
