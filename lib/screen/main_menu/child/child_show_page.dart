@@ -103,7 +103,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
         title: Text("Bola haqida"),
         actions: [
           IconButton(onPressed: (){Get.to(()=>ChildDocumentPage(id: widget.id,));}, icon: Icon(Icons.folder_open)),
-          IconButton(onPressed: (){Get.to(()=>ChildQarindoshlarPage());}, icon: Icon(Icons.family_restroom)),
+          IconButton(onPressed: (){Get.to(()=>ChildQarindoshlarPage(id: widget.id,));}, icon: Icon(Icons.family_restroom)),
           IconButton(onPressed: (){Get.to(()=>ChildPaymartsPage());}, icon: Icon(Icons.account_balance_wallet)),
           IconButton(onPressed: (){Get.to(()=>ChildDavomadPage());}, icon: Icon(Icons.checklist)),
         ],

@@ -27,6 +27,9 @@ class _ChildDocumentPageState extends State<ChildDocumentPage> {
 
   final box = GetStorage();
 
+  // Set of document ids that are currently being deleted
+  final Set<int> _deletingIds = {};
+
   @override
   void initState() {
     super.initState();
@@ -110,15 +113,21 @@ class _ChildDocumentPageState extends State<ChildDocumentPage> {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        insetPadding: const EdgeInsets.all(12),
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+          side: BorderSide(color: Colors.blue, width: 1.2),
+        ),
+        backgroundColor: Colors.white,
+        insetPadding: const EdgeInsets.all(8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: const EdgeInsets.all(0),
               child: Row(
                 children: [
-                  const Icon(Icons.image),
+                  const Icon(Icons.image, color: Colors.blue),
                   const SizedBox(width: 8),
                   const Text(
                     "To‘liq ko‘rish",
@@ -132,6 +141,7 @@ class _ChildDocumentPageState extends State<ChildDocumentPage> {
                 ],
               ),
             ),
+            const Divider(color: Colors.grey, thickness: 1),
             Flexible(
               child: InteractiveViewer(
                 minScale: 0.5,
@@ -148,24 +158,120 @@ class _ChildDocumentPageState extends State<ChildDocumentPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
+  Future<void> _confirmAndDelete(dynamic rawId) async {
+    final int? docId = _normalizeId(rawId);
+    if (docId == null) {
+      return;
+    }
+
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+          side: BorderSide(color: Colors.blue, width: 1.2),
+        ),
+        backgroundColor: Colors.white,
+        title: const Text('Hujjatni o‘chirish'),
+        content: const Text(
+          'Siz rostdan ham ushbu hujjatni o‘chirmoqchimisiz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Bekor qilish'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Ha, o‘chirish'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _deleteDocument(docId);
+    }
+  }
+
+  int? _normalizeId(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is int) return raw;
+    if (raw is String) return int.tryParse(raw);
+    try {
+      return (raw as num).toInt();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _deleteDocument(int docId) async {
+    setState(() => _deletingIds.add(docId));
+    try {
+      final uri = Uri.parse('$baseUrl/child-show-document-delete');
+      final headers = await _getHeaders();
+      final Map<String, String> sendHeaders = Map.from(headers);
+      sendHeaders['Content-Type'] = 'application/json';
+      final body = json.encode({'id': docId});
+      final res = await http
+          .post(uri, headers: sendHeaders, body: body)
+          .timeout(const Duration(seconds: 120));
+      if (res.statusCode == 200) {
+        Get.snackbar(
+          'Muvaffaqiyat',
+          "Bola hujjati o'chirildi.",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        await _fetchDocument();
+      } else {
+        Get.snackbar(
+          'Xatolik',
+          "Serverga bog'lanishda xatolik.",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Xatolik',
+        "Serverga bog'lanishda xatolik.",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      setState(() => _deletingIds.remove(docId));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Bola hujjatlari"),actions: [
-        IconButton(onPressed: () async {
-          final res = await Get.to(() => ChildDocumentCreatePage(id: widget.id));
-          if (res == true) _fetchDocument();
-        }, icon: Icon(Icons.add_circle_outline)),
-        SizedBox(width: 1.2,)
-      ],),
-
+      appBar: AppBar(
+        title: const Text("Bola hujjatlari"),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final res = await Get.to(
+                () => ChildDocumentCreatePage(id: widget.id),
+              );
+              if (res == true) _fetchDocument();
+            },
+            icon: const Icon(Icons.add_circle_outline),
+          ),
+          const SizedBox(width: 1.2),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: Colors.blue))
           : _error
@@ -202,6 +308,9 @@ class _ChildDocumentPageState extends State<ChildDocumentPage> {
                 itemBuilder: (ctx, index) {
                   final item = _data![index];
                   final full = _fullUrl(item['url'] ?? "");
+                  final int? docId = _normalizeId(
+                    item['id'] ?? item['document_id'],
+                  );
                   return Card(
                     color: Colors.white,
                     shape: RoundedRectangleBorder(
@@ -239,7 +348,7 @@ class _ChildDocumentPageState extends State<ChildDocumentPage> {
                       ),
                       title: Text(
                         (item['type']?.toString().toUpperCase() ?? '-'),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 20,
                         ),
@@ -247,14 +356,39 @@ class _ChildDocumentPageState extends State<ChildDocumentPage> {
                       subtitle: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(item['user_id']),
-                          Text(item['created_at']),
+                          Text(item['user_id']?.toString() ?? ''),
+                          Text(item['created_at']?.toString() ?? ''),
                         ],
                       ),
-                      trailing: IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.delete_outline, color: Colors.red),
-                      ),
+                      trailing: docId == null
+                          ? IconButton(
+                              onPressed: null,
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                            )
+                          : (_deletingIds.contains(docId)
+                                ? const SizedBox(
+                                    width: 36,
+                                    height: 36,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : IconButton(
+                                    onPressed: () => _confirmAndDelete(docId),
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.red,
+                                    ),
+                                  )),
                     ),
                   );
                 },
