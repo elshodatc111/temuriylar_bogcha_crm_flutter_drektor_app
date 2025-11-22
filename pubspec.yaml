@@ -40,6 +40,14 @@ dependencies:
   http: ^1.6.0
   mask_text_input_formatter: ^2.9.0
   curved_labeled_navigation_bar: ^2.0.6
+  intl: ^0.20.2
+  file_picker: ^10.3.7
+  path: any
+  image_picker: ^1.2.1
+  mime: ^2.0.0
+  http_parser: ^4.1.2
+  path_provider: ^2.1.5
+  flutter_image_compress: ^2.4.0
 
 dev_dependencies:
   flutter_test:

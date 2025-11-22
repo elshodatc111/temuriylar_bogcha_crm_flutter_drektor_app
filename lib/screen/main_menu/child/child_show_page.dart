@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -104,7 +102,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
       appBar: AppBar(
         title: Text("Bola haqida"),
         actions: [
-          IconButton(onPressed: (){Get.to(()=>ChildDocumentPage());}, icon: Icon(Icons.folder_open)),
+          IconButton(onPressed: (){Get.to(()=>ChildDocumentPage(id: widget.id,));}, icon: Icon(Icons.folder_open)),
           IconButton(onPressed: (){Get.to(()=>ChildQarindoshlarPage());}, icon: Icon(Icons.family_restroom)),
           IconButton(onPressed: (){Get.to(()=>ChildPaymartsPage());}, icon: Icon(Icons.account_balance_wallet)),
           IconButton(onPressed: (){Get.to(()=>ChildDavomadPage());}, icon: Icon(Icons.checklist)),
