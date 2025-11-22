@@ -9,6 +9,7 @@ import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_document_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_paymarts_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_qarindoshlar_page.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_show_page.dart';
 
 final String baseUrl = ApiConst.apiUrl;
 
@@ -28,6 +29,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
   bool _isLoading = true;
   String _error = '';
   Map<String, dynamic>? _child;
+  List<GroupInfo> _group = [];
 
   @override
   void initState() {
@@ -60,13 +62,28 @@ class _ChildShowPageState extends State<ChildShowPage> {
       if (resp.statusCode == 200) {
         final Map<String, dynamic> body = json.decode(resp.body);
         final about = body['about'] as Map<String, dynamic>?;
+        final group = body['group'] as List<dynamic>?;
+
         if (about == null) {
           setState(() {
             _error = 'Ma\'lumot topilmadi';
             _isLoading = false;
             _child = null;
+            _group = [];
           });
           return;
+        }
+
+        // parse group list into typed objects
+        _group = [];
+        if (group != null) {
+          _group = group.map((e) {
+            if (e is Map<String, dynamic>) {
+              return GroupInfo.fromJson(e);
+            } else {
+              return GroupInfo.empty();
+            }
+          }).toList();
         }
 
         setState(() {
@@ -83,6 +100,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
           _error = msg;
           _isLoading = false;
           _child = null;
+          _group = [];
         });
       }
     } catch (e) {
@@ -90,6 +108,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
         _error = 'So‘rovda xatolik: $e';
         _isLoading = false;
         _child = null;
+        _group = [];
       });
     }
   }
@@ -103,7 +122,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
         title: Text("Bola haqida"),
         actions: [
           IconButton(onPressed: (){Get.to(()=>ChildDocumentPage(id: widget.id,));}, icon: Icon(Icons.folder_open)),
-          IconButton(onPressed: (){Get.to(()=>ChildQarindoshlarPage(id: widget.id,));}, icon: Icon(Icons.family_restroom)),
+          IconButton(onPressed: (){Get.to(() => ChildQarindoshlarPage(id: widget.id));}, icon: Icon(Icons.family_restroom)),
           IconButton(onPressed: (){Get.to(()=>ChildPaymartsPage());}, icon: Icon(Icons.account_balance_wallet)),
           IconButton(onPressed: (){Get.to(()=>ChildDavomadPage());}, icon: Icon(Icons.checklist)),
         ],
@@ -139,47 +158,127 @@ class _ChildShowPageState extends State<ChildShowPage> {
             : RefreshIndicator(
           onRefresh: _fetchChild,
           // Use a ListView as the scrollable root so RefreshIndicator works reliably.
-          child: ListView(
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            children: [
-              _buildInfoDetailsCard(theme),
-              const SizedBox(height: 12),
-              const Text("Bola Guruhlari", style: TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              // Get groups from _child if present, otherwise empty list
-              Builder(builder: (ctx) {
-                final groupsRaw = _child?['group'];
-                List<dynamic> groups = [];
-                if (groupsRaw is List) groups = groupsRaw;
-                // If no groups provided, show informative message
-                if (groups.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('Guruhlar topilmadi', style: TextStyle(color: Colors.grey.shade600)),
-                  );
-                }
-                // Use a shrink-wrapped ListView.builder inside the ListView
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: groups.length,
-                  itemBuilder: (ctx, index) {
-                    final g = groups[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      child: ListTile(
-                        dense: true,
-                        leading: const Icon(Icons.group),
-                        title: Text(g.toString()),
-                      ),
-                    );
-                  },
-                );
-              }),
-            ],
+            child: Column(
+              children: [
+                _buildInfoDetailsCard(theme),
+                const SizedBox(height: 12),
+                const Text("Bola Guruhlari", style: TextStyle(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                _buildGroupHistory()
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildGroupHistory(){
+    if (_group.isEmpty) {
+      return const Expanded(
+        child: Text('Bola guruhlar tarixi mavjud emas.'),
+      );
+    }
+    return Expanded(
+      child: ListView.separated(
+        itemCount: _group.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (ctx, index) {
+          final g = _group[index];
+          return InkWell(
+            onTap: (){
+              Get.to(()=>GroupShowPage(id: g.groupId, name: g.groupName));
+            },
+            child: Card(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8),side: BorderSide(color: Colors.blue)),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(child: Text(g.groupName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600))),
+                        Chip(
+                          padding: EdgeInsets.symmetric(vertical: 0,horizontal: 0),
+                          label: Text(g.status ? 'Aktiv' : 'Guruhdan o\'chirildi'),
+                          backgroundColor: g.status ? Colors.green.shade100 : Colors.grey.shade200,
+                        )
+                      ],
+                    ),
+                    const Divider(color: Colors.grey, thickness: 0.5),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_month, size: 16,color: Colors.blue,),
+                            const SizedBox(width: 6),
+                            Text('Start: ${g.startDate.isNotEmpty ? g.startDate : "-"}',style: TextStyle(fontSize: 16),),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const Icon(Icons.person, size: 16,color: Colors.blue,),
+                            const SizedBox(width: 6),
+                            Text('${g.startUserId.isNotEmpty ? g.startUserId : "-"}',style: TextStyle(fontSize: 16),),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.comment_bank_outlined,size: 16,color: Colors.blue,),
+                        SizedBox(width: 4.0,),
+                        Text('Izoh: ${g.startAbout}'),
+                      ],
+                    ),
+                    g.status==false?Column(
+                      children: [
+                        const Divider(color: Colors.grey, thickness: 0.5),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.calendar_month, size: 16,color: Colors.red,),
+                                const SizedBox(width: 6),
+                                Text('Start: ${g.endDate.isNotEmpty ? g.endDate : "-"}',style: TextStyle(fontSize: 16),),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Icon(Icons.person, size: 16,color: Colors.red,),
+                                const SizedBox(width: 6),
+                                Text('${g.endUserId.isNotEmpty ? g.endUserId : "-"}',style: TextStyle(fontSize: 16),),
+                              ],
+                            ),
+                          ],
+                        ),
+                        if (g.endAbout.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.comment_bank_outlined,size: 16,color: Colors.blue,),
+                              SizedBox(width: 4.0,),
+                              Text('Izoh: ${g.endAbout}'),
+                            ],
+                          )
+                        ],
+                      ],
+                    ):SizedBox()
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -321,40 +420,9 @@ class _ChildShowPageState extends State<ChildShowPage> {
                 elevation: 2,
               ),
             ),
-          ):
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () async {
-                final result = await Get.to(() => ChildAddGroup(id: int.tryParse(_child!['id'].toString()) ?? 0));
-                if (result == true) {
-                  await _fetchChild();
-                  Get.snackbar(
-                    'Muvaffaqiyat',
-                    'Guruhdan o\'chirildi — maʼlumot yangilandi',
-                    backgroundColor: Colors.green.shade600,
-                    colorText: Colors.white,
-                    snackPosition: SnackPosition.TOP,
-                  );
-                }
-              },
-              icon: Icon(Icons.group_remove, size: 20, color: Colors.red),
-              label: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14.0),
-                child: Text("Guruhdan o'chirish",style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red.shade700,
-                  ),
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.red.shade300),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ),
+          ):SizedBox(),
         ]),
+
       ),
     );
   }
@@ -382,6 +450,58 @@ class _InfoRow extends StatelessWidget {
           Text(value)
         ],
       ),
+    );
+  }
+}
+
+class GroupInfo {
+  final int groupId;
+  final String groupName;
+  final bool status;
+  final String startDate;
+  final String startUserId;
+  final String startAbout;
+  late final String endDate;
+  final String endUserId;
+  final String endAbout;
+
+  GroupInfo({
+    required this.groupId,
+    required this.groupName,
+    required this.status,
+    required this.startDate,
+    required this.startUserId,
+    required this.startAbout,
+    required this.endDate,
+    required this.endUserId,
+    required this.endAbout,
+  });
+
+  factory GroupInfo.fromJson(Map<String, dynamic> json) {
+    return GroupInfo(
+      groupId: int.tryParse('${json['group_id'] ?? 0}') ?? 0,
+      groupName: json['group_name']?.toString() ?? '',
+      status: json['status'] == true,
+      startDate: json['start_data']?.toString() ?? '',
+      startUserId: json['start_user_id']?.toString() ?? '',
+      startAbout: json['start_about']?.toString() ?? '',
+      endDate: json['end_data']?.toString() ?? '',
+      endUserId: json['end_user_id']?.toString() ?? '',
+      endAbout: json['end_about']?.toString() ?? '',
+    );
+  }
+
+  factory GroupInfo.empty() {
+    return GroupInfo(
+      groupId: 0,
+      groupName: '',
+      status: false,
+      startDate: '',
+      startUserId: '',
+      startAbout: '',
+      endDate: '',
+      endUserId: '',
+      endAbout: '',
     );
   }
 }
