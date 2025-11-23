@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_items/child_davomad_page.dart';
 
 class GroupDavomadPage extends StatefulWidget {
   final int id;
@@ -43,16 +41,53 @@ class _GroupDavomadPageState extends State<GroupDavomadPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Davomad'),
+        title: const Text('Guruh davomadi'),
+        centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () async {
-              final res = await Get.to(() => ChildGroupDavomadPage(id: widget.id));
-              if (res == true) Get.back(result: true);
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                ),
+                backgroundColor: Colors.white,
+                builder: (_) => Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        "Davomad turlari",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildLegend(),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                ),
+              );
             },
-            icon: Icon(Icons.checklist_rtl),
+            icon: Icon(Icons.help_outline),
           ),
-          SizedBox(width: 8.0),
         ],
       ),
       body: SingleChildScrollView(
@@ -60,7 +95,6 @@ class _GroupDavomadPageState extends State<GroupDavomadPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildLegend(),
             const SizedBox(height: 12),
             const Text(
               'Joriy oy davomadi',
@@ -88,11 +122,11 @@ class _GroupDavomadPageState extends State<GroupDavomadPage> {
       runSpacing: 8,
       children: [
         _legendItem(_statusBox('keldi'), 'Keldi'),
-        _legendItem(_statusBox('kechikdi'), 'Kechikdi'),
+        _legendItem(_statusBox('kechikdi'), 'Kechikib keldi'),
         _legendItem(_statusBox('kelmadi'), 'Kelmadi'),
-        _legendItem(_statusBox('kasal'), 'Kasal'),
-        _legendItem(_statusBox('sababli'), 'Sababli'),
-        _legendItem(_statusBox('false'), 'Davomad olinmagan'),
+        _legendItem(_statusBox('kasal'), 'Kasal Kelmadi'),
+        _legendItem(_statusBox('sababli'), 'Sababli Kelmadi'),
+        _legendItem(_statusBox('false'), 'Tarbiyachi davomad olmagan'),
       ],
     );
   }

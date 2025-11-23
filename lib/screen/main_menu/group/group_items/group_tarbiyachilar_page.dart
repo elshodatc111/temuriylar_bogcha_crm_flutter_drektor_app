@@ -10,6 +10,14 @@ class GroupTarbiyachilarPage extends StatefulWidget {
 class _GroupTarbiyachilarPageState extends State<GroupTarbiyachilarPage> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Guruh tarbiyachilar"),
+        centerTitle: true,
+        actions: [
+          IconButton(onPressed: (){}, icon: Icon(Icons.person_add_alt_1_outlined))
+        ],
+      ),
+    );
   }
 }

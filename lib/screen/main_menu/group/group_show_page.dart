@@ -6,11 +6,10 @@ import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:temuriylar_crm_app_admin/const/api_const.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_items/child_delete_page.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_items/debet_children_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_page.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_items/child_delet_page.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_items/group_child_deletes_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_items/group_davomad_page.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_items/group_delete_child_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_items/group_tarbiyachilar_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_update_page.dart';
 
@@ -33,12 +32,10 @@ class _GroupShowPageState extends State<GroupShowPage> {
   String _error = '';
   Map<String, dynamic>? _group;
   List<dynamic> _active = [];
-  List<dynamic> _debetChild = [];
-
-  // IMPORTANT: davomad* API qaytargan obyekt (user + data)
   Map<String, dynamic>? davomadJoriy;
   Map<String, dynamic>? davomadOtgan;
   List<dynamic>? tarbiyachilar;
+  List<dynamic>? delete_child;
 
   @override
   void initState() {
@@ -76,10 +73,10 @@ class _GroupShowPageState extends State<GroupShowPage> {
         setState(() {
           _group = (body['group'] as Map<String, dynamic>?) ?? {};
           _active = (body['active_child'] as List<dynamic>?) ?? [];
-          _debetChild = (body['delete_child'] as List<dynamic>?) ?? [];
-          // IMPORTANT: davomad and oldingi_davomad are maps in your API sample
+          delete_child = (body['delete_child'] as List<dynamic>?) ?? [];
           davomadJoriy = (body['davomad'] as Map<String, dynamic>?) ?? {};
-          davomadOtgan = (body['oldingi_davomad'] as Map<String, dynamic>?) ?? {};
+          davomadOtgan =
+              (body['oldingi_davomad'] as Map<String, dynamic>?) ?? {};
           tarbiyachilar = (body['tarbiyachilar'] as List<dynamic>?) ?? [];
           _isLoading = false;
         });
@@ -87,7 +84,8 @@ class _GroupShowPageState extends State<GroupShowPage> {
         String msg = 'Server xatosi: ${resp.statusCode}';
         try {
           final parsed = json.decode(resp.body);
-          if (parsed is Map && parsed['message'] != null) msg = parsed['message'].toString();
+          if (parsed is Map && parsed['message'] != null)
+            msg = parsed['message'].toString();
         } catch (_) {}
         setState(() {
           _error = msg;
@@ -138,41 +136,45 @@ class _GroupShowPageState extends State<GroupShowPage> {
             physics: const AlwaysScrollableScrollPhysics(),
             child: _isLoading
                 ? SizedBox(
-              height: MediaQuery.of(context).size.height - kToolbarHeight,
-              child: Center(child: CircularProgressIndicator(color: primary)),
-            )
+                    height: MediaQuery.of(context).size.height - kToolbarHeight,
+                    child: Center(
+                      child: CircularProgressIndicator(color: primary),
+                    ),
+                  )
                 : _error.isNotEmpty
                 ? SizedBox(
-              height: MediaQuery.of(context).size.height - kToolbarHeight,
-              child: Center(
-                child: ElevatedButton.icon(
-                  onPressed: _fetchGroup,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Qayta yuklash'),
-                  style: ElevatedButton.styleFrom(backgroundColor: primary),
-                ),
-              ),
-            )
+                    height: MediaQuery.of(context).size.height - kToolbarHeight,
+                    child: Center(
+                      child: ElevatedButton.icon(
+                        onPressed: _fetchGroup,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Qayta yuklash'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primary,
+                        ),
+                      ),
+                    ),
+                  )
                 : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _infoCard(primary),
-                  const SizedBox(height: 8),
-                  _itemButton(),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Aktiv bolalar",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        _infoCard(primary),
+                        const SizedBox(height: 8),
+                        _itemButton(),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Aktiv bolalar",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        _itemActivChild(), // ichida shrinkWrap ListView
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  _itemActivChild(), // ichida shrinkWrap ListView
-                ],
-              ),
-            ),
           ),
         ),
       ),
@@ -184,45 +186,59 @@ class _GroupShowPageState extends State<GroupShowPage> {
       children: [
         Row(
           children: [
-            // Qarzdorlar
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.red)),
-                  backgroundColor: Colors.white,
-                ),
-                onPressed: () async {
-                  await Get.to(() => DebetChildrenPage(list: _debetChild));
-                  await _fetchGroup();
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.monetization_on_outlined, size: 28, color: Colors.red),
-                    SizedBox(height: 6),
-                    Text("Qarzdorlar"),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 8),
-
-            // Tarbiyachilari
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.indigo)),
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(color: Colors.indigo),
+                  ),
                 ),
                 onPressed: () async {
-                  await Get.to(() => ChildDeletePage(active: _active));
+                  await showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) {
+                      return DraggableScrollableSheet(
+                        initialChildSize: 0.8,
+                        minChildSize: 0.8,
+                        maxChildSize: 0.95,
+                        expand: false,
+                        builder: (_, controller) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      width: 40,
+                                      height: 4,
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: GroupTarbiyachilarPage(tarbiyachilar: tarbiyachilar as List<dynamic>)
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
                   await _fetchGroup();
                 },
                 child: Column(
@@ -235,55 +251,66 @@ class _GroupShowPageState extends State<GroupShowPage> {
                 ),
               ),
             ),
-
             const SizedBox(width: 10),
-
-            // Davomad
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.deepOrangeAccent)),
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(color: Colors.deepOrangeAccent),
+                  ),
                 ),
-                onPressed: () async {
-                  final List<dynamic> joriyUsers = (davomadJoriy != null
-                      && davomadJoriy!['user'] is List)
-                      ? List<dynamic>.from(davomadJoriy!['user'] as List)
-                      : <dynamic>[];
-
-                  final List<dynamic> otganUsers = (davomadOtgan != null
-                      && davomadOtgan!['user'] is List)
-                      ? List<dynamic>.from(davomadOtgan!['user'] as List)
-                      : <dynamic>[];
-
-                  // Also prepare dates lists (if needed in the page)
-                  final List<dynamic> joriyDates = (davomadJoriy != null
-                      && davomadJoriy!['data'] is List)
-                      ? List<dynamic>.from(davomadJoriy!['data'] as List)
-                      : <dynamic>[];
-
-                  final List<dynamic> otganDates = (davomadOtgan != null
-                      && davomadOtgan!['data'] is List)
-                      ? List<dynamic>.from(davomadOtgan!['data'] as List)
-                      : <dynamic>[];
-
-                  // Navigate to page and wait; when it closes we'll refresh
-                  await Get.to(() => GroupDavomadPage(
-                    id: widget.id,
-                    joriyOy: {'user': joriyUsers, 'data': joriyDates},
-                    otganOy: {'user': otganUsers, 'data': otganDates},
-                  ));
-                  await _fetchGroup();
+                onPressed: () async{
+                  final List<dynamic> joriyUsers = (davomadJoriy != null && davomadJoriy!['user'] is List) ? List<dynamic>.from(davomadJoriy!['user'] as List) : <dynamic>[];
+                  final List<dynamic> otganUsers = (davomadOtgan != null && davomadOtgan!['user'] is List) ? List<dynamic>.from(davomadOtgan!['user'] as List) : <dynamic>[];
+                  final List<dynamic> joriyDates = (davomadJoriy != null && davomadJoriy!['data'] is List) ? List<dynamic>.from(davomadJoriy!['data'] as List) : <dynamic>[];
+                  final List<dynamic> otganDates = (davomadOtgan != null && davomadOtgan!['data'] is List) ? List<dynamic>.from(davomadOtgan!['data'] as List) : <dynamic>[];
+                  await showModalBottomSheet(context: context,isScrollControlled: true,backgroundColor: Colors.transparent,
+                    builder: (context) {
+                      return DraggableScrollableSheet(initialChildSize: 0.8,minChildSize: 0.8,maxChildSize: 0.95,expand: false,
+                        builder: (_, controller) {
+                          return Container(
+                            decoration: BoxDecoration(color: Colors.white,borderRadius: BorderRadius.vertical(top: Radius.circular(18)),),
+                            child: Padding(padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                children: [
+                                  Center(child: Container(width: 40,
+                                      height: 4,
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: GroupDavomadPage(
+                                      id: widget.id,
+                                      joriyOy: {'user': joriyUsers, 'data': joriyDates},
+                                      otganOy: {'user': otganUsers, 'data': otganDates},
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
                 },
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    Icon(Icons.checklist_rtl, size: 28, color: Colors.deepOrangeAccent),
+                    Icon(
+                      Icons.checklist_rtl,
+                      size: 28,
+                      color: Colors.deepOrangeAccent,
+                    ),
                     SizedBox(height: 6),
-                    Text("Davomad"),
+                    Text("Guruh davomadi"),
                   ],
                 ),
               ),
@@ -291,26 +318,71 @@ class _GroupShowPageState extends State<GroupShowPage> {
           ],
         ),
         const SizedBox(height: 8),
+        // Guruhdan o'chirilganlar
         Row(
           children: [
-            // Guruhdan o'chirilganlar
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.orange)),
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(color: Colors.orange),
+                  ),
                 ),
                 onPressed: () async {
-                  await Get.to(() => GroupDeleteChildPage(id: widget.id));
-                  await _fetchGroup();
+                  await showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) {
+                      return DraggableScrollableSheet(
+                        initialChildSize: 0.8,
+                        minChildSize: 0.8,
+                        maxChildSize: 0.95,
+                        expand: false,
+                        builder: (_, controller) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      width: 40,
+                                      height: 4,
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                      child: GroupChildDeletesPage(list: delete_child as List<dynamic>)
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
                 },
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    Icon(Icons.history_toggle_off, size: 28, color: Colors.orange),
+                    Icon(
+                      Icons.history_toggle_off,
+                      size: 28,
+                      color: Colors.orange,
+                    ),
                     SizedBox(height: 6),
                     Text("Guruhdan o‘chirilganlar"),
                   ],
@@ -327,17 +399,63 @@ class _GroupShowPageState extends State<GroupShowPage> {
                   backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.redAccent)),
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(color: Colors.redAccent),
+                  ),
                 ),
                 onPressed: () async {
-                  await Get.to(() => GroupDeleteChildPage(id: widget.id));
+                  await showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) {
+                      return DraggableScrollableSheet(
+                        initialChildSize: 0.8,
+                        minChildSize: 0.8,
+                        maxChildSize: 0.95,
+                        expand: false,
+                        builder: (_, controller) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      width: 40,
+                                      height: 4,
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                      child: ChildDeletPage(active_child: _active)
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
                   await _fetchGroup();
                 },
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    Icon(Icons.person_remove_outlined, size: 28, color: Colors.redAccent),
+                    Icon(
+                      Icons.person_remove_outlined,
+                      size: 28,
+                      color: Colors.redAccent,
+                    ),
                     SizedBox(height: 6),
                     Text("Guruhdan o‘chirish"),
                   ],
@@ -373,10 +491,9 @@ class _GroupShowPageState extends State<GroupShowPage> {
           ),
           child: ListTile(
             onTap: () {
-              Get.to(() => ChildShowPage(
-                id: user['child_id'],
-                name: user['child'],
-              ))?.then((_) => _fetchGroup());
+              Get.to(
+                () => ChildShowPage(id: user['child_id'], name: user['child']),
+              )?.then((_) => _fetchGroup());
             },
             leading: CircleAvatar(
               backgroundColor: Colors.blue.shade50,
@@ -589,7 +706,11 @@ class _GroupShowPageState extends State<GroupShowPage> {
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.supervisor_account_outlined, size: 16, color: Colors.blue),
+                    const Icon(
+                      Icons.supervisor_account_outlined,
+                      size: 16,
+                      color: Colors.blue,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       "Tarbiyachilar: $tarbCount",
@@ -611,7 +732,11 @@ class _GroupShowPageState extends State<GroupShowPage> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calculate_outlined, size: 16, color: Colors.blue),
+                    const Icon(
+                      Icons.calculate_outlined,
+                      size: 16,
+                      color: Colors.blue,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       "Qarzdorlik: $debetSum UZS",
@@ -624,7 +749,11 @@ class _GroupShowPageState extends State<GroupShowPage> {
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.calculate_outlined, size: 16, color: Colors.blue),
+                    const Icon(
+                      Icons.calculate_outlined,
+                      size: 16,
+                      color: Colors.blue,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       "Qarzdorlar soni: $debetCount",
@@ -646,7 +775,11 @@ class _GroupShowPageState extends State<GroupShowPage> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.people_alt_outlined, size: 16, color: Colors.blue),
+                    const Icon(
+                      Icons.people_alt_outlined,
+                      size: 16,
+                      color: Colors.blue,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       "Menejer: $creator",
@@ -659,7 +792,11 @@ class _GroupShowPageState extends State<GroupShowPage> {
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_month_outlined, size: 16, color: Colors.blue),
+                    const Icon(
+                      Icons.calendar_month_outlined,
+                      size: 16,
+                      color: Colors.blue,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       "$created",
