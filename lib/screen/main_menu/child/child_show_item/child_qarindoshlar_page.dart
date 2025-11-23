@@ -289,165 +289,187 @@ class _ChildQarindoshlarPageState extends State<ChildQarindoshlarPage> {
       );
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bolaning qarindoshlari'),
-        actions: [
-          IconButton(
+/*
+IconButton(
             onPressed: () async {
               final res = await Get.to(() => ChildQarindoshCreatePage(id: widget.id));
               if (res == true) _fetchList();
             },
             icon: const Icon(Icons.add_circle_outline),
           ),
-          const SizedBox(width: 8.0),
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error
-          ? Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Colors.redAccent,
-              ),
-              const SizedBox(height: 12),
-              Text(_errorText, textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              ElevatedButton.icon(
-                onPressed: _fetchList,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Qayta urinib ko‘rish'),
-              ),
-            ],
+ */
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity, // 🔵 butun kenglik
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text(
+              "Yangi qarindosh qo'shish",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            onPressed: () async {
+              final res = await Get.to(
+                    () => ChildQarindoshCreatePage(id: widget.id),
+              );
+
+              if (res == true) {
+                _fetchList();
+              }
+            },
           ),
         ),
-      )
-          : RefreshIndicator(
-        onRefresh: _onRefresh,
-        child: _items.isEmpty
-            ? const Center(child: Text("Qarindosh topilmadi"))
-            : ListView.separated(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          itemCount: _items.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final item = _items[index];
-            final itemId = item['id'] ?? item['child_rel_id'] ?? item['qarindosh_id'] ?? item;
+        Expanded(child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _error
+            ? Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: Colors.redAccent,
+                ),
+                const SizedBox(height: 12),
+                Text(_errorText, textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: _fetchList,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Qayta urinib ko‘rish'),
+                ),
+              ],
+            ),
+          ),
+        )
+            : RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: _items.isEmpty
+              ? const Center(child: Text("Qarindosh topilmadi"))
+              : ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+            itemCount: _items.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final item = _items[index];
+              final itemId = item['id'] ?? item['child_rel_id'] ?? item['qarindosh_id'] ?? item;
 
-            return Card(
-              color: Colors.white,
-              margin: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: const BorderSide(color: Colors.blue),
-              ),
-              elevation: 2,
-              child: ListTile(
-                leading: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: _deletingIds.contains(itemId)
-                      ? const Center(
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                      : IconButton(
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                            side: BorderSide(color: Colors.blue, width: 1.2),
+              return Card(
+                color: Colors.white,
+                margin: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: const BorderSide(color: Colors.blue),
+                ),
+                elevation: 2,
+                child: ListTile(
+                  leading: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: _deletingIds.contains(itemId)
+                        ? const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                        : IconButton(
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                              side: BorderSide(color: Colors.blue, width: 1.2),
+                            ),
+                            title: const Text('O‘chirishni tasdiqlash'),
+                            content: const Text('Rostdan ham bu qarindoshni o‘chirmoqchimisiz?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Bekor qilish')),
+                              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Ha, O\'chirish')),
+                            ],
                           ),
-                          title: const Text('O‘chirishni tasdiqlash'),
-                          content: const Text('Rostdan ham bu qarindoshni o‘chirmoqchimisiz?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Bekor qilish')),
-                            TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Ha, O\'chirish')),
-                          ],
+                        );
+                        if (confirm == true) {
+                          await _deleteItem(itemId);
+                        }
+                      },
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    ),
+                  ),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "${item['name'] ?? '-'}",
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
-                      );
-                      if (confirm == true) {
-                        await _deleteItem(itemId);
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "${item['phone'] ?? ''}",
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+                      ),
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on_outlined, size: 14, color: Colors.blue),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(item['address'] ?? '', style: const TextStyle(fontSize: 14))),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.help_center_outlined, size: 14, color: Colors.blue),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(item['about'] ?? '', style: const TextStyle(fontSize: 14))),
+                        ],
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      final phone = item['phone'] ?? '';
+                      if (phone.toString().isNotEmpty) {
+                        _callPhone(phone.toString());
+                      } else {
+                        Get.snackbar(
+                          'Xatolik',
+                          'Telefon raqam mavjud emas',
+                          backgroundColor: Colors.red.shade700,
+                          colorText: Colors.white,
+                          snackPosition: SnackPosition.TOP,
+                        );
                       }
                     },
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    icon: const Icon(Icons.phone, color: Colors.blue),
                   ),
                 ),
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "${item['name'] ?? '-'}",
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "${item['phone'] ?? ''}",
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-                    ),
-                  ],
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on_outlined, size: 14, color: Colors.blue),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text(item['address'] ?? '', style: const TextStyle(fontSize: 14))),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(Icons.help_center_outlined, size: 14, color: Colors.blue),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text(item['about'] ?? '', style: const TextStyle(fontSize: 14))),
-                      ],
-                    ),
-                  ],
-                ),
-                trailing: IconButton(
-                  onPressed: () {
-                    final phone = item['phone'] ?? '';
-                    if (phone.toString().isNotEmpty) {
-                      _callPhone(phone.toString());
-                    } else {
-                      Get.snackbar(
-                        'Xatolik',
-                        'Telefon raqam mavjud emas',
-                        backgroundColor: Colors.red.shade700,
-                        colorText: Colors.white,
-                        snackPosition: SnackPosition.TOP,
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.phone, color: Colors.blue),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+              );
+            },
+          ),
+        ))
+      ],
     );
   }
 }

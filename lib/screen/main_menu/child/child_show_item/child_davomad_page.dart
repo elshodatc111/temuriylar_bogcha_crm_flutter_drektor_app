@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 class ChildDavomadPage extends StatefulWidget {
-  const ChildDavomadPage({super.key});
+  final int id;
+  const ChildDavomadPage({super.key, required this.id});
 
   @override
   State<ChildDavomadPage> createState() => _ChildDavomadPageState();

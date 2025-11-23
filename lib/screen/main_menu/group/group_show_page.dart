@@ -210,10 +210,8 @@ class _GroupShowPageState extends State<GroupShowPage> {
   }
 
   Widget _itemButton() {
-    // local safe copies to pass to modals
     final List<dynamic> safeTarbiyachilar = List<dynamic>.from(tarbiyachilar ?? []);
     final List<dynamic> safeDeleted = List<dynamic>.from(delete_child ?? []);
-
     return Column(
       children: [
         Row(

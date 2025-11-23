@@ -254,146 +254,169 @@ class _ChildDocumentPageState extends State<ChildDocumentPage> {
     }
   }
 
+  /*
+
+ */
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Bola hujjatlari"),
-        actions: [
-          IconButton(
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text(
+              "Yangi hujjat qo'shish",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             onPressed: () async {
               final res = await Get.to(
-                () => ChildDocumentCreatePage(id: widget.id),
+                    () => ChildDocumentCreatePage(id: widget.id),
               );
-              if (res == true) _fetchDocument();
+
+              if (res == true) {
+                _fetchDocument();
+              }
             },
-            icon: const Icon(Icons.add_circle_outline),
           ),
-          const SizedBox(width: 1.2),
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Colors.blue))
-          : _error
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: Colors.redAccent,
+        ),
+        Expanded(
+          child: _loading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.blue),
+                )
+              : _error
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.redAccent,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(_errorText),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: _fetchDocument,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text("Qayta urinish"),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(_errorText),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: _fetchDocument,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text("Qayta urinish"),
-                  ),
-                ],
-              ),
-            )
-          : _data == null || _data!.isEmpty
-          ? const Center(child: Text("Hujjat topilmadi"))
-          : RefreshIndicator(
-              onRefresh: _fetchDocument,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 12,
-                ),
-                itemCount: _data!.length,
-                itemBuilder: (ctx, index) {
-                  final item = _data![index];
-                  final full = _fullUrl(item['url'] ?? "");
-                  final int? docId = _normalizeId(
-                    item['id'] ?? item['document_id'],
-                  );
-                  return Card(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.blue, width: 1.2),
+                )
+              : _data == null || _data!.isEmpty
+              ? const Center(child: Text("Hujjat topilmadi"))
+              : RefreshIndicator(
+                  onRefresh: _fetchDocument,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 0,
                     ),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    elevation: 2,
-                    child: ListTile(
-                      leading: SizedBox(
-                        width: 54,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (full.isNotEmpty) _showImage(full);
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              full,
-                              width: double.infinity,
-                              loadingBuilder: (context, child, progress) {
-                                if (progress == null) return child;
-                                return const Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                );
+                    itemCount: _data!.length,
+                    itemBuilder: (ctx, index) {
+                      final item = _data![index];
+                      final full = _fullUrl(item['url'] ?? "");
+                      final int? docId = _normalizeId(
+                        item['id'] ?? item['document_id'],
+                      );
+                      return Card(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(
+                            color: Colors.blue,
+                            width: 1.2,
+                          ),
+                        ),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 2,
+                        child: ListTile(
+                          leading: SizedBox(
+                            width: 54,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (full.isNotEmpty) _showImage(full);
                               },
-                              errorBuilder: (_, __, ___) => const Center(
-                                child: Icon(Icons.broken_image, size: 36),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  full,
+                                  width: double.infinity,
+                                  loadingBuilder: (context, child, progress) {
+                                    if (progress == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (_, __, ___) => const Center(
+                                    child: Icon(Icons.broken_image, size: 36),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      title: Text(
-                        (item['type']?.toString().toUpperCase() ?? '-'),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
-                        ),
-                      ),
-                      subtitle: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(item['user_id']?.toString() ?? ''),
-                          Text(item['created_at']?.toString() ?? ''),
-                        ],
-                      ),
-                      trailing: docId == null
-                          ? IconButton(
-                              onPressed: null,
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-                            )
-                          : (_deletingIds.contains(docId)
-                                ? const SizedBox(
-                                    width: 36,
-                                    height: 36,
-                                    child: Center(
-                                      child: SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
+                          title: Text(
+                            (item['type']?.toString().toUpperCase() ?? '-'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 20,
+                            ),
+                          ),
+                          subtitle: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(item['user_id']?.toString() ?? ''),
+                              Text(item['created_at']?.toString() ?? ''),
+                            ],
+                          ),
+                          trailing: docId == null
+                              ? IconButton(
+                                  onPressed: null,
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                  ),
+                                )
+                              : (_deletingIds.contains(docId)
+                                    ? const SizedBox(
+                                        width: 36,
+                                        height: 36,
+                                        child: Center(
+                                          child: SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  )
-                                : IconButton(
-                                    onPressed: () => _confirmAndDelete(docId),
-                                    icon: const Icon(
-                                      Icons.delete_outline,
-                                      color: Colors.red,
-                                    ),
-                                  )),
-                    ),
-                  );
-                },
-              ),
-            ),
+                                      )
+                                    : IconButton(
+                                        onPressed: () =>
+                                            _confirmAndDelete(docId),
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.red,
+                                        ),
+                                      )),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }
