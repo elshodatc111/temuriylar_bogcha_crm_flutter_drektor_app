@@ -410,8 +410,8 @@ class _GroupShowPageState extends State<GroupShowPage> {
                     backgroundColor: Colors.transparent,
                     builder: (context) {
                       return DraggableScrollableSheet(
-                        initialChildSize: 0.8,
-                        minChildSize: 0.8,
+                        initialChildSize: 0.75,
+                        minChildSize: 0.75,
                         maxChildSize: 0.95,
                         expand: false,
                         builder: (_, controller) {
@@ -436,7 +436,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
                                     ),
                                   ),
                                   Expanded(
-                                      child: ChildDeletPage(active_child: _active)
+                                      child: ChildDeletPage(group_id:widget.id, active_child: _active)
                                   ),
                                 ],
                               ),
