@@ -34,8 +34,10 @@ class _GroupShowPageState extends State<GroupShowPage> {
   List<dynamic> _active = [];
   Map<String, dynamic>? davomadJoriy;
   Map<String, dynamic>? davomadOtgan;
-  List<dynamic>? tarbiyachilar;
-  List<dynamic>? delete_child;
+
+  // Make these non-nullable and default to empty lists
+  List<dynamic> tarbiyachilar = [];
+  List<dynamic> delete_child = [];
 
   @override
   void initState() {
@@ -70,22 +72,48 @@ class _GroupShowPageState extends State<GroupShowPage> {
 
       if (resp.statusCode == 200) {
         final Map<String, dynamic> body = json.decode(resp.body);
+
+        // Parse safely, provide defaults
+        final groupMap = (body['group'] as Map<String, dynamic>?) ?? {};
+        final activeList = (body['active_child'] as List<dynamic>?) ?? [];
+        final deletedList = (body['delete_child'] as List<dynamic>?) ?? [];
+
+        final davJ = (body['davomad'] as Map<String, dynamic>?) ?? {};
+        final davO = (body['oldingi_davomad'] as Map<String, dynamic>?) ?? {};
+
+        // tarbiyachilar in API come with different keys (user_id, user, lovozim)
+        final List<dynamic> rawTarb = (body['tarbiyachilar'] as List<dynamic>?) ?? [];
+
+        // Map tarbiyachilar to a consistent shape for UI {id, name, position, ...}
+        final mappedTarbiyachilar = rawTarb.map<Map<String, dynamic>>((e) {
+          try {
+            final m = Map<String, dynamic>.from(e);
+            return {
+              'id': m['user_id'] ?? m['id'],
+              'name': m['user'] ?? m['name'],
+              'position': m['lovozim'] ?? m['position'] ?? '',
+              // keep original fields too if needed
+              ...m,
+            };
+          } catch (_) {
+            return <String, dynamic>{};
+          }
+        }).toList();
+
         setState(() {
-          _group = (body['group'] as Map<String, dynamic>?) ?? {};
-          _active = (body['active_child'] as List<dynamic>?) ?? [];
-          delete_child = (body['delete_child'] as List<dynamic>?) ?? [];
-          davomadJoriy = (body['davomad'] as Map<String, dynamic>?) ?? {};
-          davomadOtgan =
-              (body['oldingi_davomad'] as Map<String, dynamic>?) ?? {};
-          tarbiyachilar = (body['tarbiyachilar'] as List<dynamic>?) ?? [];
+          _group = groupMap;
+          _active = List<dynamic>.from(activeList);
+          delete_child = List<dynamic>.from(deletedList);
+          davomadJoriy = davJ;
+          davomadOtgan = davO;
+          tarbiyachilar = mappedTarbiyachilar;
           _isLoading = false;
         });
       } else {
         String msg = 'Server xatosi: ${resp.statusCode}';
         try {
           final parsed = json.decode(resp.body);
-          if (parsed is Map && parsed['message'] != null)
-            msg = parsed['message'].toString();
+          if (parsed is Map && parsed['message'] != null) msg = parsed['message'].toString();
         } catch (_) {}
         setState(() {
           _error = msg;
@@ -136,45 +164,45 @@ class _GroupShowPageState extends State<GroupShowPage> {
             physics: const AlwaysScrollableScrollPhysics(),
             child: _isLoading
                 ? SizedBox(
-                    height: MediaQuery.of(context).size.height - kToolbarHeight,
-                    child: Center(
-                      child: CircularProgressIndicator(color: primary),
-                    ),
-                  )
+              height: MediaQuery.of(context).size.height - kToolbarHeight,
+              child: Center(
+                child: CircularProgressIndicator(color: primary),
+              ),
+            )
                 : _error.isNotEmpty
                 ? SizedBox(
-                    height: MediaQuery.of(context).size.height - kToolbarHeight,
-                    child: Center(
-                      child: ElevatedButton.icon(
-                        onPressed: _fetchGroup,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Qayta yuklash'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primary,
-                        ),
-                      ),
-                    ),
-                  )
+              height: MediaQuery.of(context).size.height - kToolbarHeight,
+              child: Center(
+                child: ElevatedButton.icon(
+                  onPressed: _fetchGroup,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Qayta yuklash'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                  ),
+                ),
+              ),
+            )
                 : Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        _infoCard(primary),
-                        const SizedBox(height: 8),
-                        _itemButton(),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "Aktiv bolalar",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        _itemActivChild(), // ichida shrinkWrap ListView
-                      ],
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _infoCard(primary),
+                  const SizedBox(height: 8),
+                  _itemButton(),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Aktiv bolalar",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  _itemActivChild(), // ichida shrinkWrap ListView
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -182,6 +210,10 @@ class _GroupShowPageState extends State<GroupShowPage> {
   }
 
   Widget _itemButton() {
+    // local safe copies to pass to modals
+    final List<dynamic> safeTarbiyachilar = List<dynamic>.from(tarbiyachilar ?? []);
+    final List<dynamic> safeDeleted = List<dynamic>.from(delete_child ?? []);
+
     return Column(
       children: [
         Row(
@@ -229,7 +261,8 @@ class _GroupShowPageState extends State<GroupShowPage> {
                                     ),
                                   ),
                                   Expanded(
-                                    child: GroupTarbiyachilarPage(tarbiyachilar: tarbiyachilar as List<dynamic>)
+                                    // pass safeTarbiyachilar (already mapped to id/name/position)
+                                    child: GroupTarbiyachilarPage(tarbiyachilar: safeTarbiyachilar, group_id: widget.id),
                                   ),
                                 ],
                               ),
@@ -262,44 +295,41 @@ class _GroupShowPageState extends State<GroupShowPage> {
                     side: const BorderSide(color: Colors.deepOrangeAccent),
                   ),
                 ),
-                onPressed: () async{
+                onPressed: () async {
                   final List<dynamic> joriyUsers = (davomadJoriy != null && davomadJoriy!['user'] is List) ? List<dynamic>.from(davomadJoriy!['user'] as List) : <dynamic>[];
                   final List<dynamic> otganUsers = (davomadOtgan != null && davomadOtgan!['user'] is List) ? List<dynamic>.from(davomadOtgan!['user'] as List) : <dynamic>[];
                   final List<dynamic> joriyDates = (davomadJoriy != null && davomadJoriy!['data'] is List) ? List<dynamic>.from(davomadJoriy!['data'] as List) : <dynamic>[];
                   final List<dynamic> otganDates = (davomadOtgan != null && davomadOtgan!['data'] is List) ? List<dynamic>.from(davomadOtgan!['data'] as List) : <dynamic>[];
-                  await showModalBottomSheet(context: context,isScrollControlled: true,backgroundColor: Colors.transparent,
-                    builder: (context) {
-                      return DraggableScrollableSheet(initialChildSize: 0.8,minChildSize: 0.8,maxChildSize: 0.95,expand: false,
-                        builder: (_, controller) {
-                          return Container(
-                            decoration: BoxDecoration(color: Colors.white,borderRadius: BorderRadius.vertical(top: Radius.circular(18)),),
-                            child: Padding(padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                children: [
-                                  Center(child: Container(width: 40,
-                                      height: 4,
-                                      margin: const EdgeInsets.only(bottom: 12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[300],
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: GroupDavomadPage(
-                                      id: widget.id,
-                                      joriyOy: {'user': joriyUsers, 'data': joriyDates},
-                                      otganOy: {'user': otganUsers, 'data': otganDates},
-                                    ),
-                                  ),
-                                ],
+
+                  await showModalBottomSheet(context: context, isScrollControlled: true, backgroundColor: Colors.transparent, builder: (context) {
+                    return DraggableScrollableSheet(initialChildSize: 0.8, minChildSize: 0.8, maxChildSize: 0.95, expand: false, builder: (_, controller) {
+                      return Container(
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(18)),),
+                        child: Padding(padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            children: [
+                              Center(child: Container(width: 40,
+                                height: 4,
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                              ),
+                              Expanded(
+                                child: GroupDavomadPage(
+                                  id: widget.id,
+                                  joriyOy: {'user': joriyUsers, 'data': joriyDates},
+                                  otganOy: {'user': otganUsers, 'data': otganDates},
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       );
-                    },
-                  );
+                    },);
+                  },);
                 },
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -332,6 +362,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
                   ),
                 ),
                 onPressed: () async {
+                  // pass safeDeleted (never null)
                   await showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
@@ -363,9 +394,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
                                       ),
                                     ),
                                   ),
-                                  Expanded(
-                                      child: GroupChildDeletesPage(list: delete_child as List<dynamic>)
-                                  ),
+                                  Expanded(child: GroupChildDeletesPage(list: safeDeleted)),
                                 ],
                               ),
                             ),
@@ -435,9 +464,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
                                       ),
                                     ),
                                   ),
-                                  Expanded(
-                                      child: ChildDeletPage(group_id:widget.id, active_child: _active)
-                                  ),
+                                  Expanded(child: ChildDeletPage(group_id:widget.id, active_child: _active)),
                                 ],
                               ),
                             ),
@@ -492,7 +519,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
           child: ListTile(
             onTap: () {
               Get.to(
-                () => ChildShowPage(id: user['child_id'], name: user['child']),
+                    () => ChildShowPage(id: user['child_id'], name: user['child']),
               )?.then((_) => _fetchGroup());
             },
             leading: CircleAvatar(
@@ -706,11 +733,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
                 ),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.supervisor_account_outlined,
-                      size: 16,
-                      color: Colors.blue,
-                    ),
+                    const Icon(Icons.supervisor_account_outlined, size: 16, color: Colors.blue),
                     const SizedBox(width: 4),
                     Text(
                       "Tarbiyachilar: $tarbCount",
