@@ -631,21 +631,54 @@ class _KassaPageState extends State<KassaPage> {
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(Radius.circular(8)),
-                            side: BorderSide(color: Colors.blue, width: 1.2),
+                            side: BorderSide(color: Colors.blue, width: 2),
                           ),
                           title: const Text('Tasdiqlash'),
-                          content: const Text(
-                            'Bu yozuvni o\'chirishni xohlaysizmi?',
-                          ),
+                          content: Text('Bu chiqimni o\'chirishni xohlaysizmi?',),
                           actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(ctx).pop(false),
-                              child: Text('Bekor qilish', style: TextStyle(color: Colors.red)),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.of(ctx).pop(true),
-                              child: Text('O‘chirish', style: TextStyle(color: Colors.green)),
-                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(false),
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      backgroundColor: Colors.red.shade50,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Bekor qilish',
+                                      style: TextStyle(
+                                        color: Colors.red.shade700,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () => Navigator.of(ctx).pop(true),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      backgroundColor: Colors.red,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'O‘chirish',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
                           ],
                         ),
                       );
@@ -673,8 +706,6 @@ class _KassaPageState extends State<KassaPage> {
                 ),
 
                 const SizedBox(width: 10),
-
-                // Confirm button — faqat admin yoki direktor uchun ko'rsatiladi
                 if (position == 'admin' || position == 'direktor' || position == 'drektor')
                   Expanded(
                     child: _loadingConfirmIds.contains(id)
@@ -707,8 +738,49 @@ class _KassaPageState extends State<KassaPage> {
                             title: const Text('Tasdiqlash'),
                             content: const Text('Bu chiqimni tasdiqlaysizmi?'),
                             actions: [
-                              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Bekor qilish', style: TextStyle(color: Colors.redAccent))),
-                              ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Tasdiqlash', style: TextStyle(color: Colors.green))),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextButton(
+                                      onPressed: () => Navigator.of(ctx).pop(false),
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(vertical: 12),
+                                        backgroundColor: Colors.red.shade50,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Bekor qilish',
+                                        style: TextStyle(
+                                          color: Colors.red.shade700,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () => Navigator.of(ctx).pop(true),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(vertical: 12),
+                                        backgroundColor: Colors.green,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Tasdiqlash',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
                             ],
                           ),
                         );
