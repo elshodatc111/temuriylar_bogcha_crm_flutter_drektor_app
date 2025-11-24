@@ -211,7 +211,7 @@ class _KassaPageState extends State<KassaPage> {
     } else if (type == 'ishHaqi') {
       content = IshHaqiItems(ishHaqi: _ishHaqi);
     } else if (type == 'kassadan_chiqim' || type == 'kassadan_chiqim') {
-      content = KassdanChiqimItem();
+      content = KassdanChiqimItem(amount: _kassa['kassa_naqt'],);
     } else if (type == 'qaytar' || type == 'qaytarish') {
       content = QaytarTulovItem(qaytar: _qaytarish);
     } else {
