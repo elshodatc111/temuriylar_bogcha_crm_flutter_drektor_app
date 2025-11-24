@@ -163,7 +163,7 @@ class _GroupPageState extends State<GroupPage> with SingleTickerProviderStateMix
                   return const SizedBox.shrink();
                 },
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: Get.height*0.35),
               Center(child: CircularProgressIndicator(color: primary)),
               const SizedBox(height: 12),
               Center(child: Text("Ma'lumotlar yuklanmoqda...", style: TextStyle(color: Colors.grey.shade700))),
