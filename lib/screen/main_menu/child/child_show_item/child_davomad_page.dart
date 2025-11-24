@@ -10,6 +10,6 @@ class ChildDavomadPage extends StatefulWidget {
 class _ChildDavomadPageState extends State<ChildDavomadPage> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Text("Bola davomadi");
   }
 }

@@ -4,11 +4,13 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:temuriylar_crm_app_admin/const/api_const.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_add_chegirma.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_add_group.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_davomad_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_document_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_paymarts_page.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_qarindoshlar_page.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_tulov_qaytar.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_show_page.dart';
 
 final String baseUrl = ApiConst.apiUrl;
@@ -124,7 +126,6 @@ class _ChildShowPageState extends State<ChildShowPage> {
     String type,
   ) {
     final size = MediaQuery.of(context).size;
-
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -167,13 +168,17 @@ class _ChildShowPageState extends State<ChildShowPage> {
                     ],
                   ),
                   const Divider(),
-                  Expanded(
+                  Expanded( // chegirma  qaytar
                     child: type == "hujjat"
                         ? ChildDocumentPage(id: widget.id)
                         : type == "qarindosh"
                         ? ChildQarindoshlarPage(id: widget.id)
                         : type == "paymart"
                         ? ChildPaymartsPage(id: widget.id)
+                        : type == "chegirma"
+                        ? ChildAddChegirma(id: widget.id)
+                        : type == "qaytar"
+                        ? ChildTulovQaytar(id: widget.id)
                         : ChildDavomadPage(id: widget.id),
                   ),
                 ],
@@ -360,6 +365,57 @@ class _ChildShowPageState extends State<ChildShowPage> {
             ),
           ],
         ),
+        Row(
+          children: [
+            _child?['balans']>0?Expanded(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: const Icon(Icons.payment),
+                label: const Text("To'lov qaytarish"),
+                onPressed: () => _openModal(
+                  context,
+                  "To'lovlar",
+                  Icons.payment,
+                  Colors.orange,
+                  'qaytar',
+                ),
+              ),
+            ):SizedBox(),
+            _child?['balans']>0?SizedBox(width: 4):SizedBox(),
+            Expanded(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo.shade700,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: const Icon(Icons.local_offer),
+                label: const Text("Chegirma kiritish"),
+                onPressed: () => _openModal(
+                  context,
+                  "Chegirma kiritish",
+                  Icons.local_offer,
+                  Colors.purple,
+                  'chegirma',
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -527,10 +583,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
   }
 
   Widget _buildInfoDetailsCard(ThemeData theme) {
-    final registr =
-        _child?['registr']?.toString() ??
-        _child?['created_at']?.toString() ??
-        '';
+    final registr = _child?['registr']?.toString() ?? _child?['created_at']?.toString() ?? '';
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(
