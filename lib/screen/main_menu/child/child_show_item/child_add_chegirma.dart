@@ -144,7 +144,7 @@ class _ChildAddChegirmaState extends State<ChildAddChegirma> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(height: 8,),
-          Text("Bolaning yaqin qarindosi"),
+          Text("Bolaning yaqin qarindoshi"),
           SizedBox(height: 4,),
           Container(
             decoration: BoxDecoration(

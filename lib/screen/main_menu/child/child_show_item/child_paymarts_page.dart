@@ -138,16 +138,16 @@ class _ChildPaymartsPageState extends State<ChildPaymartsPage> {
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
-        side: BorderSide(color: status?Colors.green:Colors.red, width: 1.2),
+        side: BorderSide(color: type=='qaytarish'?Colors.deepPurple:type=='chegirma'?Colors.orange:status?Colors.green:Colors.red, width: 1.2),
       ),
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         leading: CircleAvatar(
-          backgroundColor: Colors.blue.withOpacity(0.12),
+          backgroundColor: type=='qaytarish'?Colors.deepPurple.withOpacity(0.12):type=='chegirma'?Colors.orange.withOpacity(0.12):Colors.blue.withOpacity(0.12),
           child: Icon(
             _iconForType(type),
-            color: Colors.blue,
+            color: type=='qaytarish'?Colors.deepPurple:type=='chegirma'?Colors.orange:Colors.blue,
             size: 20,
           ),
         ),
@@ -161,16 +161,16 @@ class _ChildPaymartsPageState extends State<ChildPaymartsPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: status ? Colors.green.withOpacity(0.12) : Colors.orange.withOpacity(0.08),
+                color: type=='qaytarish'?Colors.deepPurple.withOpacity(0.12):type=='chegirma'?Colors.orange.withOpacity(0.12):status ? Colors.green.withOpacity(0.12) : Colors.orange.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: status ? Colors.green : Colors.orange, width: 0.8),
+                border: Border.all(color: type=='qaytarish'?Colors.deepPurple:type=='chegirma'?Colors.orange:status ? Colors.green : Colors.orange, width: 0.8),
               ),
               child: Row(
                 children: [
                   Icon(
                     status ? Icons.check_circle : Icons.pending,
                     size: 14,
-                    color: status ? Colors.green : Colors.orange,
+                    color: type=='qaytarish'?Colors.deepPurple:type=='chegirma'?Colors.orange:status ? Colors.green : Colors.orange,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -252,11 +252,6 @@ class _ChildPaymartsPageState extends State<ChildPaymartsPage> {
           ),
         ),
 
-        const SizedBox(height: 4.0),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text("Bolaning barcha to'lovlari", style: TextStyle(fontWeight: FontWeight.w600,fontSize: 16)),
-        ),
         const SizedBox(height: 4.0),
         Expanded(
           child: _loading

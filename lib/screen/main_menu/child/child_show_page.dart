@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:temuriylar_crm_app_admin/const/api_const.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_add_chegirma.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_item/child_add_group.dart';
@@ -139,7 +140,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
             color: Colors.transparent,
             child: Container(
               width: size.width*0.96,
-              height: size.height * 0.60,
+              height: size.height * 0.70,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -201,10 +202,6 @@ class _ChildShowPageState extends State<ChildShowPage> {
         );
       },
     );
-
-    // Agar modal ichidagi widget muvaffaqiyatli operatsiya bajarib `Navigator.pop(context, true)` bilan true yuborsa,
-    // faqat shu holatda ota sahifani yangilaymiz. Agar child bunday qiymat yubormasa (yoki null/false bo'lsa),
-    // yangilanishni o'tkazib yuboramiz.
     if (result == true) {
       await _fetchChild();
     }
@@ -608,7 +605,10 @@ class _ChildShowPageState extends State<ChildShowPage> {
       },
     );
   }
-
+  String formatSum(int number) {
+    final formatter = NumberFormat("#,###", "en_US");
+    return formatter.format(number).replaceAll(",", " ");
+  }
   Widget _buildInfoDetailsCard(ThemeData theme) {
     final registr =
         _child?['registr']?.toString() ?? _child?['created_at']?.toString() ?? '';
@@ -662,7 +662,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
             _InfoRow(
               icon: Icons.wallet,
               label: 'Balans:',
-              value: '${_child?['balans'] ?? 0} UZS',
+              value: '${formatSum(_child?['balans']) ?? 0} UZS',
             ),
             _InfoRow(
               icon: Icons.calculate,
