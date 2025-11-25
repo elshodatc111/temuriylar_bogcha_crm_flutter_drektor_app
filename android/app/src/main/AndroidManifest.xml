@@ -6,6 +6,7 @@
         android:label="Temouriy(Drektor)"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        android:allowBackup="false"
         <activity
             android:name=".MainActivity"
             android:exported="true"
