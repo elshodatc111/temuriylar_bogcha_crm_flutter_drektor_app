@@ -222,7 +222,7 @@ class _GroupPageState extends State<GroupPage> with SingleTickerProviderStateMix
                                 CircleAvatar(
                                   radius: 20,
                                   backgroundColor: primary.withOpacity(0.12),
-                                  child: Icon(Icons.group, color: primary),
+                                  child: Text("${g['child_count']}",style: TextStyle(fontSize: 20,color: Colors.blue),),
                                 ),
                                 const SizedBox(width: 10),
                                 Column(
@@ -235,6 +235,14 @@ class _GroupPageState extends State<GroupPage> with SingleTickerProviderStateMix
                                         const Icon(Icons.meeting_room, size: 14, color: Colors.grey),
                                         const SizedBox(width: 6),
                                         Text(room, style: TextStyle(color: Colors.grey.shade700)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.payments, size: 16, color: Colors.grey),
+                                        const SizedBox(width: 8),
+                                        Text(price, style: const TextStyle(fontWeight: FontWeight.w700)),
                                       ],
                                     ),
                                   ],
@@ -263,31 +271,22 @@ class _GroupPageState extends State<GroupPage> with SingleTickerProviderStateMix
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 6),
-                                Text(created, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                              ],
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // Price & user row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.payments, size: 16, color: Colors.grey),
-                                const SizedBox(width: 8),
-                                Text(price, style: const TextStyle(fontWeight: FontWeight.w700)),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const Icon(Icons.person, size: 14, color: Colors.grey),
-                                const SizedBox(width: 6),
-                                Text(user, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.calendar_month_outlined, size: 14, color: Colors.grey),
+                                    const SizedBox(width: 6),
+                                    Text(created, style: TextStyle(fontSize: 12, color: Colors.grey.shade600))
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.person, size: 14, color: Colors.grey),
+                                    const SizedBox(width: 6),
+                                    Text(user, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+                                  ],
+                                ),
                               ],
                             ),
                           ],

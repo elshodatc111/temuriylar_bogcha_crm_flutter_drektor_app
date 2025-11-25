@@ -509,6 +509,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
         final user = _active[index];
         final bal = int.tryParse(user['child_balans']?.toString() ?? '0') ?? 0;
         return Card(
+          margin: EdgeInsets.symmetric(horizontal: 0,vertical: 2),
           color: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -520,14 +521,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
                     () => ChildShowPage(id: user['child_id'], name: user['child']),
               )?.then((_) => _fetchGroup());
             },
-            leading: CircleAvatar(
-              backgroundColor: Colors.blue.shade50,
-              child: Text(
-                "${index + 1}",
-                style: const TextStyle(fontSize: 14, color: Colors.blue),
-              ),
-            ),
-            title: Row(
+            title: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
@@ -537,6 +531,8 @@ class _GroupShowPageState extends State<GroupShowPage> {
                       size: 16,
                       color: Colors.blue,
                     ),
+                    const SizedBox(width: 4),
+                    Text("FIO:",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
                     const SizedBox(width: 4),
                     Text(
                       user['child']?.toString() ?? '-',
@@ -555,6 +551,8 @@ class _GroupShowPageState extends State<GroupShowPage> {
                       color: Colors.blue,
                     ),
                     const SizedBox(width: 4),
+                    Text("Balans:",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                    const SizedBox(width: 4),
                     Text(
                       "${formatSum(bal)} UZS",
                       style: TextStyle(
@@ -569,7 +567,7 @@ class _GroupShowPageState extends State<GroupShowPage> {
             ),
             subtitle: Column(
               children: [
-                const SizedBox(height: 8),
+                const SizedBox(height: 2),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

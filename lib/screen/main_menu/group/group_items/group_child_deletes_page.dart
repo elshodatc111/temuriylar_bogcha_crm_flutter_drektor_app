@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/child/child_show_page.dart';
 
 class GroupChildDeletesPage extends StatefulWidget {
@@ -30,6 +31,10 @@ class _GroupChildDeletesPageState extends State<GroupChildDeletesPage> {
       return dateStr;
     }
   }
+  String formatSum(int number) {
+    final formatter = NumberFormat("#,###", "en_US");
+    return formatter.format(number).replaceAll(",", " ");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +55,7 @@ class _GroupChildDeletesPageState extends State<GroupChildDeletesPage> {
               final item = widget.list[index];
               final name = (item['child'] ?? '—').toString();
               final childId = item['child_id'];
-              final balance = item['child_balans']?.toString() ?? '0';
+              final balance = formatSum(item['child_balans'])?.toString() ?? '0';
               final startData = item['start_data']?.toString();
               final startUser = item['start_user']?.toString() ?? '-';
               final startAbout = item['start_about']?.toString() ?? '';
@@ -72,15 +77,6 @@ class _GroupChildDeletesPageState extends State<GroupChildDeletesPage> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor: Colors.blue.shade50,
-                          child: Text(
-                            _initials(name),
-                            style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +115,7 @@ class _GroupChildDeletesPageState extends State<GroupChildDeletesPage> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      'Qo\'shildi: ${_formatDate(startData)} • $startUser',
+                                      'Qo\'shish izohi: ${_formatDate(startData)} • $startUser',
                                       style: TextStyle(color: Colors.grey.shade700),
                                     ),
                                   ),
@@ -147,7 +143,7 @@ class _GroupChildDeletesPageState extends State<GroupChildDeletesPage> {
                                   const Icon(Icons.stop, size: 16, color: Colors.red),
                                   Expanded(
                                     child: Text(
-                                      'O\'chirildi: ${_formatDate(endData)} • $endUser',
+                                      'O\'chirish izoh: ${_formatDate(endData)} • $endUser',
                                       style: TextStyle(color: Colors.grey.shade700),
                                     ),
                                   ),
