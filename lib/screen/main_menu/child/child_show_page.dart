@@ -80,9 +80,9 @@ class _ChildShowPageState extends State<ChildShowPage> {
         }
 
         // parse group list into typed objects
-        _group = [];
+        List<GroupInfo> parsedGroup = [];
         if (group != null) {
-          _group = group.map((e) {
+          parsedGroup = group.map((e) {
             if (e is Map<String, dynamic>) {
               return GroupInfo.fromJson(e);
             } else {
@@ -93,6 +93,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
 
         setState(() {
           _child = about;
+          _group = parsedGroup;
           _isLoading = false;
         });
       } else {
@@ -118,15 +119,16 @@ class _ChildShowPageState extends State<ChildShowPage> {
     }
   }
 
+  /// O'zgartirilgan: modalni `await` qilib, result == true bo'lsa ota sahifani yangilash
   void _openModal(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    String type,
-  ) {
+      BuildContext context,
+      String title,
+      IconData icon,
+      Color color,
+      String type,
+      ) async {
     final size = MediaQuery.of(context).size;
-    showGeneralDialog(
+    final result = await showGeneralDialog<bool?>(
       context: context,
       barrierDismissible: true,
       barrierLabel: title,
@@ -136,8 +138,8 @@ class _ChildShowPageState extends State<ChildShowPage> {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              width: size.width,
-              height: size.height *0.92,
+              width: size.width*0.96,
+              height: size.height * 0.60,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -148,6 +150,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -162,13 +165,14 @@ class _ChildShowPageState extends State<ChildShowPage> {
                         ],
                       ),
                       IconButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(context, false),
                         icon: const Icon(Icons.close),
                       ),
                     ],
                   ),
                   const Divider(),
-                  Expanded( // chegirma  qaytar
+                  // Content
+                  Expanded(
                     child: type == "hujjat"
                         ? ChildDocumentPage(id: widget.id)
                         : type == "qarindosh"
@@ -187,7 +191,6 @@ class _ChildShowPageState extends State<ChildShowPage> {
           ),
         );
       },
-
       transitionBuilder: (_, anim, __, child) {
         return SlideTransition(
           position: Tween(
@@ -198,6 +201,13 @@ class _ChildShowPageState extends State<ChildShowPage> {
         );
       },
     );
+
+    // Agar modal ichidagi widget muvaffaqiyatli operatsiya bajarib `Navigator.pop(context, true)` bilan true yuborsa,
+    // faqat shu holatda ota sahifani yangilaymiz. Agar child bunday qiymat yubormasa (yoki null/false bo'lsa),
+    // yangilanishni o'tkazib yuboramiz.
+    if (result == true) {
+      await _fetchChild();
+    }
   }
 
   @override
@@ -209,57 +219,70 @@ class _ChildShowPageState extends State<ChildShowPage> {
       body: SafeArea(
         child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                  backgroundColor: Colors.white,
-                  color: Colors.blue,
-                ),
-              )
+          child: CircularProgressIndicator(
+            backgroundColor: Colors.white,
+            color: Colors.blue,
+          ),
+        )
             : _error.isNotEmpty
             ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_error, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: _fetchChild,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Qayta yuklash'),
-                      ),
-                    ],
-                  ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_error, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: _fetchChild,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Qayta yuklash'),
                 ),
-              )
+              ],
+            ),
+          ),
+        )
             : _child == null
             ? const Center(child: Text('Ma\'lumot topilmadi'))
             : RefreshIndicator(
-                onRefresh: _fetchChild,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 8,
-                  ),
-                  child: Column(
-                    children: [
-                      _buildInfoDetailsCard(theme),
-                      _itemButton(),
-                      const SizedBox(height: 12),
-                      const Text(
-                        "Bola Guruhlari",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildGroupHistory(),
-                    ],
-                  ),
+          onRefresh: _fetchChild,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height -
+                    (kToolbarHeight + MediaQuery.of(context).padding.top),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildInfoDetailsCard(theme),
+                    const SizedBox(height: 8),
+                    _itemButton(),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Bola Guruhlari",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildGroupHistory(),
+                  ],
                 ),
               ),
+            ),
+          ),
+        ),
       ),
     );
   }
-  Widget _itemButton(){
+
+  Widget _itemButton() {
+    final bal = ( (_child?['balans'] is num) ? (_child!['balans'] as num).toDouble() : (int.tryParse('${_child?['balans'] ?? 0}') ?? 0).toDouble() );
     return Column(
       children: [
         Row(
@@ -314,6 +337,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
             ),
           ],
         ),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
@@ -365,32 +389,35 @@ class _ChildShowPageState extends State<ChildShowPage> {
             ),
           ],
         ),
+        const SizedBox(height: 8),
         Row(
           children: [
-            _child?['balans']>0?Expanded(
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
+            if (bal > 0) ...[
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                  icon: const Icon(Icons.payment),
+                  label: const Text("To'lov qaytarish"),
+                  onPressed: () => _openModal(
+                    context,
+                    "To'lov qaytarish",
+                    Icons.payment,
+                    Colors.orange,
+                    'qaytar',
                   ),
-                ),
-                icon: const Icon(Icons.payment),
-                label: const Text("To'lov qaytarish"),
-                onPressed: () => _openModal(
-                  context,
-                  "To'lovlar",
-                  Icons.payment,
-                  Colors.orange,
-                  'qaytar',
                 ),
               ),
-            ):SizedBox(),
-            _child?['balans']>0?SizedBox(width: 4):SizedBox(),
+              const SizedBox(width: 4),
+            ],
             Expanded(
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
@@ -419,57 +446,110 @@ class _ChildShowPageState extends State<ChildShowPage> {
       ],
     );
   }
+
   Widget _buildGroupHistory() {
     if (_group.isEmpty) {
-      return const Expanded(child: Text('Bola guruhlar tarixi mavjud emas.'));
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child: Text('Bola guruhlar tarixi mavjud emas.'),
+      );
     }
-    return Expanded(
-      child: ListView.separated(
-        itemCount: _group.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (ctx, index) {
-          final g = _group[index];
-          return InkWell(
-            onTap: () {
-              Get.to(() => GroupShowPage(id: g.groupId, name: g.groupName));
-            },
-            child: Card(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: Colors.blue),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            g.groupName,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _group.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (ctx, index) {
+        final g = _group[index];
+        return InkWell(
+          onTap: () {
+            Get.to(() => GroupShowPage(id: g.groupId, name: g.groupName));
+          },
+          child: Card(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(color: Colors.blue),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          g.groupName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Chip(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 0,
-                          ),
-                          label: Text(
-                            g.status ? 'Aktiv' : 'Guruhdan o\'chirildi',
-                          ),
-                          backgroundColor: g.status
-                              ? Colors.green.shade100
-                              : Colors.grey.shade200,
+                      ),
+                      Chip(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 0,
+                          horizontal: 0,
                         ),
-                      ],
-                    ),
+                        label: Text(
+                          g.status ? 'Aktiv' : 'Guruhdan o\'chirildi',
+                        ),
+                        backgroundColor:
+                        g.status ? Colors.green.shade100 : Colors.grey.shade200,
+                      ),
+                    ],
+                  ),
+                  const Divider(color: Colors.grey, thickness: 0.5),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.calendar_month,
+                            size: 16,
+                            color: Colors.blue,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Start: ${g.startDate.isNotEmpty ? g.startDate : "-"}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.person,
+                            size: 16,
+                            color: Colors.blue,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${g.startUserId.isNotEmpty ? g.startUserId : "-"}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.comment_bank_outlined,
+                        size: 16,
+                        color: Colors.blue,
+                      ),
+                      const SizedBox(width: 4.0),
+                      Text('Izoh: ${g.startAbout}'),
+                    ],
+                  ),
+                  if (!g.status) ...[
                     const Divider(color: Colors.grey, thickness: 0.5),
                     const SizedBox(height: 8),
                     Row(
@@ -480,12 +560,12 @@ class _ChildShowPageState extends State<ChildShowPage> {
                             const Icon(
                               Icons.calendar_month,
                               size: 16,
-                              color: Colors.blue,
+                              color: Colors.red,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'Start: ${g.startDate.isNotEmpty ? g.startDate : "-"}',
-                              style: TextStyle(fontSize: 16),
+                              'End: ${g.endDate.isNotEmpty ? g.endDate : "-"}',
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
@@ -494,96 +574,44 @@ class _ChildShowPageState extends State<ChildShowPage> {
                             const Icon(
                               Icons.person,
                               size: 16,
-                              color: Colors.blue,
+                              color: Colors.red,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '${g.startUserId.isNotEmpty ? g.startUserId : "-"}',
-                              style: TextStyle(fontSize: 16),
+                              '${g.endUserId.isNotEmpty ? g.endUserId : "-"}',
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.comment_bank_outlined,
-                          size: 16,
-                          color: Colors.blue,
-                        ),
-                        SizedBox(width: 4.0),
-                        Text('Izoh: ${g.startAbout}'),
-                      ],
-                    ),
-                    g.status == false
-                        ? Column(
-                            children: [
-                              const Divider(color: Colors.grey, thickness: 0.5),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_month,
-                                        size: 16,
-                                        color: Colors.red,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'Start: ${g.endDate.isNotEmpty ? g.endDate : "-"}',
-                                        style: TextStyle(fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.person,
-                                        size: 16,
-                                        color: Colors.red,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '${g.endUserId.isNotEmpty ? g.endUserId : "-"}',
-                                        style: TextStyle(fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              if (g.endAbout.isNotEmpty) ...[
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.comment_bank_outlined,
-                                      size: 16,
-                                      color: Colors.blue,
-                                    ),
-                                    SizedBox(width: 4.0),
-                                    Text('Izoh: ${g.endAbout}'),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          )
-                        : SizedBox(),
+                    if (g.endAbout.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.comment_bank_outlined,
+                            size: 16,
+                            color: Colors.blue,
+                          ),
+                          const SizedBox(width: 4.0),
+                          Text('Izoh: ${g.endAbout}'),
+                        ],
+                      ),
+                    ],
                   ],
-                ),
+                ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildInfoDetailsCard(ThemeData theme) {
-    final registr = _child?['registr']?.toString() ?? _child?['created_at']?.toString() ?? '';
+    final registr =
+        _child?['registr']?.toString() ?? _child?['created_at']?.toString() ?? '';
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(
@@ -598,6 +626,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Name & seria
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -667,9 +696,8 @@ class _ChildShowPageState extends State<ChildShowPage> {
                         Radius.circular(8.0),
                       ),
                       side: BorderSide(
-                        color: _child?['guvohnoma'] == true
-                            ? Colors.green
-                            : Colors.red,
+                        color:
+                        _child?['guvohnoma'] == true ? Colors.green : Colors.red,
                       ),
                     ),
                     child: Padding(
@@ -678,9 +706,8 @@ class _ChildShowPageState extends State<ChildShowPage> {
                         children: [
                           Icon(
                             Icons.badge,
-                            color: _child?['guvohnoma'] == true
-                                ? Colors.green
-                                : Colors.blue,
+                            color:
+                            _child?['guvohnoma'] == true ? Colors.green : Colors.blue,
                           ),
                           const SizedBox(height: 4.0),
                           const Text("Guvohnoma"),
@@ -699,9 +726,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
                         Radius.circular(8.0),
                       ),
                       side: BorderSide(
-                        color: _child?['passport'] == true
-                            ? Colors.green
-                            : Colors.red,
+                        color: _child?['passport'] == true ? Colors.green : Colors.red,
                       ),
                     ),
                     child: Padding(
@@ -710,9 +735,8 @@ class _ChildShowPageState extends State<ChildShowPage> {
                         children: [
                           Icon(
                             Icons.assignment_ind,
-                            color: _child?['passport'] == true
-                                ? Colors.green
-                                : Colors.blue,
+                            color:
+                            _child?['passport'] == true ? Colors.green : Colors.blue,
                           ),
                           const SizedBox(height: 4.0),
                           const Text("Pasport"),
@@ -731,9 +755,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
                         Radius.circular(8.0),
                       ),
                       side: BorderSide(
-                        color: _child?['gepatet'] == true
-                            ? Colors.green
-                            : Colors.red,
+                        color: _child?['gepatet'] == true ? Colors.green : Colors.red,
                       ),
                     ),
                     child: Padding(
@@ -742,9 +764,7 @@ class _ChildShowPageState extends State<ChildShowPage> {
                         children: [
                           Icon(
                             Icons.vaccines,
-                            color: _child?['gepatet'] == true
-                                ? Colors.green
-                                : Colors.blue,
+                            color: _child?['gepatet'] == true ? Colors.green : Colors.blue,
                           ),
                           const SizedBox(height: 4.0),
                           const Text("Vaksina"),
@@ -758,47 +778,47 @@ class _ChildShowPageState extends State<ChildShowPage> {
             SizedBox(height: 8.0),
             _child?['status'] == false
                 ? SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final result = await Get.to(
-                          () => ChildAddGroup(
-                            id: int.tryParse(_child!['id'].toString()) ?? 0,
-                          ),
-                        );
-                        if (result == true) {
-                          await _fetchChild();
-                          Get.snackbar(
-                            'Muvaffaqiyat',
-                            'Guruhga qoʻshildi — maʼlumot yangilandi',
-                            backgroundColor: Colors.green.shade600,
-                            colorText: Colors.white,
-                            snackPosition: SnackPosition.TOP,
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.group_add, size: 20),
-                      label: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 14.0),
-                        child: Text(
-                          "Guruhga qo'shish",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 2,
-                      ),
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Get.to(
+                        () => ChildAddGroup(
+                      id: int.tryParse(_child!['id'].toString()) ?? 0,
                     ),
-                  )
-                : SizedBox(),
+                  );
+                  if (result == true) {
+                    await _fetchChild();
+                    Get.snackbar(
+                      'Muvaffaqiyat',
+                      'Guruhga qoʻshildi — maʼlumot yangilandi',
+                      backgroundColor: Colors.green.shade600,
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.TOP,
+                    );
+                  }
+                },
+                icon: const Icon(Icons.group_add, size: 20),
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 14.0),
+                  child: const Text(
+                    "Guruhga qo'shish",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade600,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            )
+                : const SizedBox.shrink(),
           ],
         ),
       ),
