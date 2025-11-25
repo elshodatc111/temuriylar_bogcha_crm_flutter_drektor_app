@@ -7,11 +7,11 @@ import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:temuriylar_crm_app_admin/const/api_const.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_show/chegirma_items.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_show/ish_haqi_items.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_show/kassdan_chiqim_item.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_show/paymarts_item.dart';
-import 'package:temuriylar_crm_app_admin/screen/main_menu/group/group_show/qaytar_tulov_item.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/kassa/kassa_show/chegirma_items.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/kassa/kassa_show/ish_haqi_items.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/kassa/kassa_show/kassdan_chiqim_item.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/kassa/kassa_show/paymarts_item.dart';
+import 'package:temuriylar_crm_app_admin/screen/main_menu/kassa/kassa_show/qaytar_tulov_item.dart';
 
 String baseUrl = ApiConst.apiUrl;
 
@@ -103,19 +103,16 @@ class _KassaPageState extends State<KassaPage> {
     return '${f.format(value)} UZS';
   }
 
-  // API: o'chirish
   Future<void> _cancelChiqim(int id) async {
     if (id <= 0) {
-      // noto'g'ri id bo'lsa bekor qilamiz
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No valid id to cancel.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No valid id to cancel.')));
       return;
     }
     if (_loadingDeleteIds.contains(id)) return;
     setState(() => _loadingDeleteIds.add(id));
     try {
-      // har safar tokenni yangilab olish (agar sessiyada o'zgarishi mumkin bo'lsa)
       final localToken = GetStorage().read('token') ?? token;
       final uri = Uri.parse('$baseUrl/kassa-chiqim-cancel');
       final res = await http.post(
@@ -134,28 +131,26 @@ class _KassaPageState extends State<KassaPage> {
         );
         await _fetchKassa();
       } else {
-        // server error: agar kerak bo'lsa res.body ham chiqarilishi mumkin
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Server xatosi: ${res.statusCode}')),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tarmoq xatosi: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Tarmoq xatosi: $e')));
     } finally {
       if (!mounted) return;
       setState(() => _loadingDeleteIds.remove(id));
     }
   }
 
-  // API: tasdiqlash
   Future<void> _confirmChiqim(int id) async {
     if (id <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No valid id to confirm.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No valid id to confirm.')));
       return;
     }
     if (_loadingConfirmIds.contains(id)) return;
@@ -174,9 +169,9 @@ class _KassaPageState extends State<KassaPage> {
       );
       if (!mounted) return;
       if (res.statusCode == 200 || res.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Chiqqim tasdiqlandi.")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Chiqqim tasdiqlandi.")));
         await _fetchKassa();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -185,9 +180,9 @@ class _KassaPageState extends State<KassaPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tarmoq xatosi: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Tarmoq xatosi: $e')));
     } finally {
       if (!mounted) return;
       setState(() => _loadingConfirmIds.remove(id));
@@ -195,12 +190,12 @@ class _KassaPageState extends State<KassaPage> {
   }
 
   Future<void> _openCenteredModal(
-      BuildContext context,
-      String title,
-      IconData icon,
-      Color color,
-      String type,
-      ) async {
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    String type,
+  ) async {
     final width = MediaQuery.of(context).size.width * 0.96;
     final maxHeight = MediaQuery.of(context).size.height * 0.60;
     Widget content;
@@ -211,13 +206,12 @@ class _KassaPageState extends State<KassaPage> {
     } else if (type == 'ishHaqi') {
       content = IshHaqiItems(ishHaqi: _ishHaqi);
     } else if (type == 'kassadan_chiqim' || type == 'kassadan_chiqim') {
-      content = KassdanChiqimItem(amount: _kassa['kassa_naqt'],);
+      content = KassdanChiqimItem(amount: _kassa['kassa_naqt']);
     } else if (type == 'qaytar' || type == 'qaytarish') {
       content = QaytarTulovItem(qaytar: _qaytarish);
     } else {
       content = const SizedBox.shrink();
     }
-
     await showDialog(
       context: context,
       barrierDismissible: true,
@@ -276,12 +270,12 @@ class _KassaPageState extends State<KassaPage> {
   }
 
   Widget _actionButton(
-      BuildContext context, {
-        required String label,
-        required IconData icon,
-        required Color color,
-        required String type,
-      }) {
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required Color color,
+    required String type,
+  }) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6.0),
@@ -346,14 +340,16 @@ class _KassaPageState extends State<KassaPage> {
 
   Widget _kassaAbout() {
     final total =
-        _intFromKey('kassa_naqt') + _intFromKey('kassa_pedding_card') + _intFromKey('kassa_pedding_shot');
+        _intFromKey('kassa_naqt') +
+        _intFromKey('kassa_pedding_card') +
+        _intFromKey('kassa_pedding_shot');
     return Column(
       children: [
         Card(
           color: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: Colors.blue.withOpacity(0.12)),
+            side: BorderSide(color: Colors.blue, width: 1.6),
           ),
           child: Container(
             width: double.infinity,
@@ -606,198 +602,250 @@ class _KassaPageState extends State<KassaPage> {
                 Expanded(
                   child: _loadingDeleteIds.contains(id)
                       ? SizedBox(
-                    height: 44,
-                    child: Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child:
-                        CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                  )
-                      : OutlinedButton.icon(
-                    onPressed: () async {
-                      if (id <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Not valid id for delete')),
-                        );
-                        return;
-                      }
-                      final ok = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
-                            side: BorderSide(color: Colors.blue, width: 2),
+                          height: 44,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
                           ),
-                          title: const Text('Tasdiqlash'),
-                          content: Text('Bu chiqimni o\'chirishni xohlaysizmi?',),
-                          actions: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextButton(
-                                    onPressed: () => Navigator.of(ctx).pop(false),
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(vertical: 12),
-                                      backgroundColor: Colors.red.shade50,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Bekor qilish',
-                                      style: TextStyle(
-                                        color: Colors.red.shade700,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                        )
+                      : OutlinedButton.icon(
+                          onPressed: () async {
+                            if (id <= 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Not valid id for delete'),
+                                ),
+                              );
+                              return;
+                            }
+                            final ok = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(8),
+                                  ),
+                                  side: BorderSide(
+                                    color: Colors.blue,
+                                    width: 2,
                                   ),
                                 ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () => Navigator.of(ctx).pop(true),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(vertical: 12),
-                                      backgroundColor: Colors.red,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'O‘chirish',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
+                                title: const Text('Tasdiqlash'),
+                                content: Text(
+                                  'Bu chiqimni o\'chirishni xohlaysizmi?',
                                 ),
-                              ],
-                            )
-                          ],
+                                actions: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(false),
+                                          style: TextButton.styleFrom(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                            backgroundColor: Colors.red.shade50,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'Bekor qilish',
+                                            style: TextStyle(
+                                              color: Colors.red.shade700,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(true),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                            backgroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'O‘chirish',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (ok == true) {
+                              await _cancelChiqim(id);
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.redAccent,
+                          ),
+                          label: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              'O‘chirish',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: Colors.redAccent.withOpacity(0.2),
+                            ),
+                            foregroundColor: Colors.redAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
                         ),
-                      );
-                      if (ok == true) {
-                        await _cancelChiqim(id);
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.redAccent,
-                    ),
-                    label: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        'O‘chirish',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),
-                      foregroundColor: Colors.redAccent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
                 ),
 
                 const SizedBox(width: 10),
-                if (position == 'admin' || position == 'direktor' || position == 'drektor')
+                if (position == 'admin' ||
+                    position == 'direktor' ||
+                    position == 'drektor')
                   Expanded(
                     child: _loadingConfirmIds.contains(id)
                         ? SizedBox(
-                      height: 44,
-                      child: Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    )
-                        : ElevatedButton.icon(
-                      onPressed: () async {
-                        if (id <= 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Not valid id for confirm')),
-                          );
-                          return;
-                        }
-                        final ok = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(8)),
-                              side: BorderSide(color: Colors.blue, width: 1.2),
+                            height: 44,
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
                             ),
-                            title: const Text('Tasdiqlash'),
-                            content: const Text('Bu chiqimni tasdiqlaysizmi?'),
-                            actions: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: TextButton(
-                                      onPressed: () => Navigator.of(ctx).pop(false),
-                                      style: TextButton.styleFrom(
-                                        padding: EdgeInsets.symmetric(vertical: 12),
-                                        backgroundColor: Colors.red.shade50,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'Bekor qilish',
-                                        style: TextStyle(
-                                          color: Colors.red.shade700,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
+                          )
+                        : ElevatedButton.icon(
+                            onPressed: () async {
+                              if (id <= 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Not valid id for confirm'),
+                                  ),
+                                );
+                                return;
+                              }
+                              final ok = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  backgroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(8),
+                                    ),
+                                    side: BorderSide(
+                                      color: Colors.blue,
+                                      width: 1.2,
                                     ),
                                   ),
-                                  SizedBox(width: 10),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () => Navigator.of(ctx).pop(true),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: EdgeInsets.symmetric(vertical: 12),
-                                        backgroundColor: Colors.green,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'Tasdiqlash',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
+                                  title: const Text('Tasdiqlash'),
+                                  content: const Text(
+                                    'Bu chiqimni tasdiqlaysizmi?',
                                   ),
-                                ],
-                              )
-                            ],
+                                  actions: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(ctx).pop(false),
+                                            style: TextButton.styleFrom(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 12,
+                                              ),
+                                              backgroundColor:
+                                                  Colors.red.shade50,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Bekor qilish',
+                                              style: TextStyle(
+                                                color: Colors.red.shade700,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () =>
+                                                Navigator.of(ctx).pop(true),
+                                            style: ElevatedButton.styleFrom(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 12,
+                                              ),
+                                              backgroundColor: Colors.green,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Tasdiqlash',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (ok == true) {
+                                await _confirmChiqim(id);
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.check_box_outlined,
+                              color: Colors.white,
+                            ),
+                            label: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8.0),
+                              child: Text(
+                                'Tasdiqlash',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                           ),
-                        );
-                        if (ok == true) {
-                          await _confirmChiqim(id);
-                        }
-                      },
-                      icon: const Icon(Icons.check_box_outlined, color: Colors.white),
-                      label: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text('Tasdiqlash', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
                   )
                 else
                   const SizedBox.shrink(),
@@ -866,69 +914,69 @@ class _KassaPageState extends State<KassaPage> {
         actions: _loading
             ? []
             : [
-          IconButton(
-            onPressed: () async {
-              await _openCenteredModal(
-                context,
-                "Kassadan Chiqim",
-                Icons.outbox_outlined,
-                Colors.blue,
-                'kassadan_chiqim',
-              );
-              if (!mounted) return;
-              await _fetchKassa();
-            },
-            icon: const Icon(Icons.outbox_outlined),
-          ),
-        ],
+                IconButton(
+                  onPressed: () async {
+                    await _openCenteredModal(
+                      context,
+                      "Kassadan Chiqim",
+                      Icons.outbox_outlined,
+                      Colors.blue,
+                      'kassadan_chiqim',
+                    );
+                    if (!mounted) return;
+                    await _fetchKassa();
+                  },
+                  icon: const Icon(Icons.outbox_outlined),
+                ),
+              ],
       ),
       body: _loading
           ? const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              backgroundColor: Colors.white,
-              color: Colors.blue,
-            ),
-            SizedBox(height: 12),
-            Text("Ma'lumotlar yuklanmoqda..."),
-          ],
-        ),
-      )
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    backgroundColor: Colors.white,
+                    color: Colors.blue,
+                  ),
+                  SizedBox(height: 12),
+                  Text("Ma'lumotlar yuklanmoqda..."),
+                ],
+              ),
+            )
           : _error != null
           ? Center(child: Text(_error!))
           : RefreshIndicator(
-        onRefresh: _fetchKassa,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _kassaAbout(),
-              const SizedBox(height: 12),
-              _itemButton(),
-              const SizedBox(height: 12),
-              // chiqim_xarajat list
-              Expanded(
-                child: _chiqim_xarajat.isEmpty
-                    ? const Center(
-                  child: Text(
-                    'Chiqqim / Xarajat yozuvlari topilmadi',
-                  ),
-                )
-                    : ListView.builder(
-                  itemCount: _chiqim_xarajat.length,
-                  itemBuilder: (ctx, index) {
-                    final item = _chiqim_xarajat[index];
-                    return _renderChiqimItem(item);
-                  },
+              onRefresh: _fetchKassa,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _kassaAbout(),
+                    const SizedBox(height: 12),
+                    _itemButton(),
+                    const SizedBox(height: 12),
+                    // chiqim_xarajat list
+                    Expanded(
+                      child: _chiqim_xarajat.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'Chiqqim / Xarajat yozuvlari topilmadi',
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _chiqim_xarajat.length,
+                              itemBuilder: (ctx, index) {
+                                final item = _chiqim_xarajat[index];
+                                return _renderChiqimItem(item);
+                              },
+                            ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

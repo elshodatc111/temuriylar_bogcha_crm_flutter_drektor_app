@@ -68,7 +68,7 @@ class _PaymartsItemState extends State<PaymartsItem> {
     final box = GetStorage().read('user');
     final String position = box['position'];
 
-    return ListView.builder(
+    return widget.tulovlar.isEmpty?Center(child: Text("Tasdiqlanmagan to'lovlar mavjud emas."),):ListView.builder(
         itemCount: widget.tulovlar.length,
         itemBuilder: (ctx, index) {
           final pay = widget.tulovlar[index];
