@@ -8,8 +8,6 @@ import 'package:temuriylar_crm_app_admin/const/api_const.dart';
 import 'package:temuriylar_crm_app_admin/screen/main_menu/setting/hodim/hodim_show_page.dart';
 
 final String baseUrl = ApiConst.apiUrl;
-const String _localPreviewPath =
-    '/mnt/data/949f9b80-23be-4c7e-b8a8-3817fa79f901.png';
 
 class ActiveHodim extends StatefulWidget {
   const ActiveHodim({super.key});
