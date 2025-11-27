@@ -150,8 +150,8 @@ class _ChildShowPageState extends State<ChildShowPage> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -172,7 +172,6 @@ class _ChildShowPageState extends State<ChildShowPage> {
                     ],
                   ),
                   const Divider(),
-                  // Content
                   Expanded(
                     child: type == "hujjat"
                         ? ChildDocumentPage(id: widget.id)

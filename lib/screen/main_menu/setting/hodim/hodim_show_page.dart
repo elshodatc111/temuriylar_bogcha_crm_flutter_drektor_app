@@ -385,7 +385,7 @@ class _HodimShowPageState extends State<HodimShowPage> {
                                       if (lavozim == 'direktor' ||
                                           lavozim == 'admin') {
                                         result = await Get.to(
-                                          () => HodimIshHaqiTulovAdmin(),
+                                          () => HodimIshHaqiTulovAdmin(id: widget.id,),
                                         );
                                       } else {
                                         result = await Get.to(
@@ -517,7 +517,6 @@ class _HodimShowPageState extends State<HodimShowPage> {
                                     onPressed: _isUpdatingStatus
                                         ? null
                                         : () async {
-                                      // Confirm action? (optional) - here we proceed directly
                                       final confirm = await Get.dialog<bool>(
                                         AlertDialog(
                                           backgroundColor: Colors.white,
@@ -601,10 +600,175 @@ class _HodimShowPageState extends State<HodimShowPage> {
                                 ):SizedBox(),
                               ],
                             )
-                          : const SizedBox(),
-                      _about!['status']
-                          ? const SizedBox(height: 8.0)
-                          : const SizedBox(),
+                          : lavozim=="direktor"?SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isUpdatingStatus
+                              ? null
+                              : () async {
+                            final confirm = await Get.dialog<bool>(
+                              AlertDialog(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.all(
+                                    Radius.circular(8.0),
+                                  ),
+                                  side: BorderSide(
+                                    color: Colors.blue,
+                                    width: 1.0,
+                                  ),
+                                ),
+                                title: Text(
+                                  'Hodimni ishga qaytarib olishni tasdiqlaysizmi?',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    onPressed: () => Get.back(result: false),
+                                    child: const Text(
+                                      'Bekor qilish',
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () =>
+                                        Get.back(result: true),
+                                    child: const Text(
+                                      'Tasdiqlash',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              await _updateStatus();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange.shade600,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _isUpdatingStatus
+                                  ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  color: Colors.white,
+                                ),
+                              )
+                                  : const Icon(
+                                Icons.person_remove_alt_1,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              const Text("Ishga qaytarib olish",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ):lavozim=="admin"?Expanded(
+                        child: ElevatedButton(
+                          onPressed: _isUpdatingStatus
+                              ? null
+                              : () async {
+                            final confirm = await Get.dialog<bool>(
+                              AlertDialog(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.all(
+                                    Radius.circular(8.0),
+                                  ),
+                                  side: BorderSide(
+                                    color: Colors.blue,
+                                    width: 1.0,
+                                  ),
+                                ),
+                                title: Text(
+                                  'Hodimni ishga qaytarib olishni tasdiqlaysizmi?',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    onPressed: () => Get.back(result: false),
+                                    child: const Text(
+                                      'Bekor qilish',
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () =>
+                                        Get.back(result: true),
+                                    child: const Text(
+                                      'Tasdiqlash',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              await _updateStatus();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange.shade600,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _isUpdatingStatus
+                                  ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  color: Colors.white,
+                                ),
+                              )
+                                  : const Icon(
+                                Icons.person_remove_alt_1,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              const Text("Ishga qaytarib olish",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ):SizedBox(),
+                      SizedBox(height: 8.0),
                       _buildDavomadCard(_davomad),
                       const SizedBox(height: 8.0),
                       const Text(
